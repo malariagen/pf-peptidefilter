@@ -1,10 +1,10 @@
-import pandas as pd
-import numpy as np
-from typing import List, Dict, Union, Tuple
-import streamlit as st
 import copy
 import re
 
+import pandas as pd
+import streamlit as st
+
+from typing import List, Dict, Union, Tuple
 
 def call_expression_data(
     df: pd.DataFrame,
@@ -87,7 +87,7 @@ def apply_filters_sequentially(
         If only_summary is True, returns:
             summary_df : pandas.DataFrame
                 A DataFrame containing the filter number, description, remaining rows,
-                and fraction of data remaining.
+                and proportion of data remaining.
         Else, returns:
             summary_df : pandas.DataFrame
                 Same as above.
@@ -130,7 +130,7 @@ def apply_filters_sequentially(
         'order': 0,                   # The sequence number of the filter (0 for initial dataset)
         'filter': 'Initial Dataset',  # Description of the filter
         'remaining': len(df),         # Number of rows remaining after the filter
-        'fraction': 1.0               # Fraction of data remaining (1.0 before any filters)
+        'proportion': 1.0             # Proportion of data remaining (1.0 before any filters)
     })
 
     # Start with the original DataFrame
@@ -195,15 +195,15 @@ def apply_filters_sequentially(
         # Update the current DataFrame to the filtered result for the next iteration
         current_df = filtered_df.copy()
 
-        # Calculate the fraction of data remaining after applying the filter
-        fraction_remaining = len(filtered_df) / len(df) if len(df) > 0 else 0
+        # Calculate the proportion of data remaining after applying the filter
+        proportion_remaining = len(filtered_df) / len(df) if len(df) > 0 else 0
 
         # Store summary information about this filtering step
         summary_data.append({
-            'order': i + 1,                 # The sequence number of the filter
-            'filter': filter_description,   # Description of the filter(s) applied
-            'remaining': len(filtered_df),  # Number of rows remaining after the filter
-            'fraction': fraction_remaining  # Fraction of data remaining
+            'order': i + 1,                     # The sequence number of the filter
+            'filter': filter_description,       # Description of the filter(s) applied
+            'remaining': len(filtered_df),      # Number of rows remaining after the filter
+            'proportion': proportion_remaining  # Proportion of data remaining
         })
 
     # Create a summary DataFrame from the collected summary data
@@ -496,7 +496,7 @@ def filter_datasets(
         len(filter_to_removed_gene_ids[f]) for f in gene_summary_df['filter'].values
     ]
     # Resort columns
-    gene_summary_df = gene_summary_df[['order','filter', 'removed', 'remaining', 'fraction']]
+    gene_summary_df = gene_summary_df[['order','filter', 'removed', 'remaining', 'proportion']]
             
     return (
         gene_summary_df, 

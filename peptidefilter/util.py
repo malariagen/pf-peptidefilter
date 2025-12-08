@@ -1,12 +1,11 @@
-import zipfile
-import re
-import time
-import streamlit as st
-import pandas as pd
-import numpy as np
 import io
-import itertools
 import json
+import zipfile
+
+import pandas as pd
+import streamlit as st
+
+from base64 import b64encode
 
 def load_json_config(file_path: str) -> dict:
     """
@@ -99,3 +98,45 @@ def render_dataframe_as_html(df: pd.DataFrame) -> None:
         lambda x: str(x).replace('\n', '<br>') if isinstance(x, str) else x
     ).to_html(escape=False)
     st.markdown(df_html, unsafe_allow_html=True)
+
+def show_image_with_url(filepath: str, url: str | None, width: int, height: int) -> None:
+    """
+    Display an image in Streamlit, optionally wrapped in a hyperlink.
+    
+    Parameters
+    ----------
+    filepath : str
+        Path to the image file.
+    url : str | None
+        URL to link the image to. If None, no link is added.
+    width : int
+        Width of the image as a percentage.
+    height : int
+        Height of the image as a percentage.
+    
+    Returns
+    -------
+    None
+    """
+    image_data = b64encode(open(filepath, "rb").read()).decode()
+    
+    if url is None:
+        # No link wrapper if url is None
+        images_html = f"""<div style='display: flex; justify-content: center; align-items: flex-end; text-align: center;'>
+            <div style="margin: 1px;">
+                <img src="data:image/png;base64,{image_data}" style="width: {width}%; height: {height}%; object-fit: contain;">
+            </div>
+        </div>
+        """
+    else:
+        # Wrap with link if url is provided
+        images_html = f"""<div style='display: flex; justify-content: center; align-items: flex-end; text-align: center;'>
+            <div style="margin: 1px;">
+                <a href="{url}">
+                    <img src="data:image/png;base64,{image_data}" style="width: {width}%; height: {height}%; object-fit: contain;">
+                </a>
+            </div>
+        </div>
+        """
+    
+    st.markdown(images_html, unsafe_allow_html=True)

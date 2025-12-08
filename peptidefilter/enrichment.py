@@ -1,10 +1,10 @@
 import csv
+
 import pandas as pd
-import re
-import numpy as np
+
 from collections import defaultdict
 from scipy.stats import fisher_exact
-from typing import Dict, List, Set
+from typing import List
 
 
 class EnrichmentAnalyzer:

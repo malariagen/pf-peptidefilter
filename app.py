@@ -1,24 +1,24 @@
-import gzip
-import re
-import time
-import streamlit as st
-import pandas as pd
-import numpy as np
-import io
-import itertools
-import json
-import matplotlib.pyplot as plt
-
-from pep.ui import *
-from pep.util import *
-from pep.filter import *
-from pep.enrichment import EnrichmentAnalyzer
-
-import re
 import gc
-import copy
-from typing import Dict, List, Tuple
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import streamlit as st
+
+# from peptidefilter.ui import *
+# from peptidefilter.util import *
+# from peptidefilter.filter import *
+
+import peptidefilter.ui as pfui
+import peptidefilter.util as pfutil
+import peptidefilter.filter as pffilter
+
+from peptidefilter.enrichment import EnrichmentAnalyzer
+
+st.set_page_config(
+    page_title="Pf-PeptideFilter",
+    page_icon="logo-medium.png"
+)
 
 def execute_filtering(filter_config: dict):
     """
@@ -45,11 +45,11 @@ def execute_filtering(filter_config: dict):
     """
     # Filter the datasets using the filter_datasets function
     summary_genes_df, summary_peptides_df, filtered_genes_df, filtered_peptides_df, filter_to_gene_ids = (
-        filter_datasets(
+        pffilter.filter_datasets(
             gene_metrics_df=st.session_state.gene_metrics_df,
             peptide_metrics_df=st.session_state.peptide_metrics_df,
             filter_config=filter_config,
-            component_keys=list(UI_CONFIG.keys()),
+            component_keys=list(pfui.UI_CONFIG.keys()),
         )
     )
 
@@ -95,19 +95,19 @@ def render_ui_form(text_config: dict, ui_config: dict, filter_config: dict):
     # Create a form for filtering candidates
     with st.form(key="filter_form"):
         # Display the human identity filters section
-        show_human_identity_filters(text_config, ui_config)
+        pfui.show_human_identity_filters(text_config, ui_config)
 
         # Display the strain conservation filters section
-        show_strain_conservation_filters(text_config, ui_config)
+        pfui.show_strain_conservation_filters(text_config, ui_config)
 
         # Display the filters for indels.
-        show_indel_frequency_filters(text_config, ui_config)
+        pfui.show_indel_frequency_filters(text_config, ui_config)
 
         # Display the gene expression filters section
-        show_gene_expression_filters(text_config, ui_config)
+        pfui.show_gene_expression_filters(text_config, ui_config)
 
         # Display the gene homology filters section
-        show_gene_homology_filters(text_config, ui_config)
+        pfui.show_gene_homology_filters(text_config, ui_config)
 
         # Add spacing for better layout
         st.write("")
@@ -184,7 +184,14 @@ def display_gene_results(text_config: dict):
                     
         # Display the summary DataFrame with 'filter' as index and without 'order' column
         st.dataframe(
-            st.session_state.summary_genes_df.set_index("filter").drop("order", axis=1)
+            st.session_state.summary_genes_df.set_index("filter").drop("order", axis=1),
+            use_container_width=True,
+            column_config={
+                "proportion": st.column_config.NumberColumn(
+                    "proportion",
+                    format="%.3f"
+                )
+            }
         )
 
         # Display summary of the filtering rules based on session state parameters
@@ -254,7 +261,7 @@ def display_gene_results(text_config: dict):
         # Download button for filtering summary
         lc.download_button(
             label="Download Filtering Summary (Genes)",
-            data=dataframe_to_csv(st.session_state.summary_genes_df),
+            data=pfutil.dataframe_to_csv(st.session_state.summary_genes_df),
             file_name="candidate-genes-filter-summary.csv",
             mime="text/csv",
         )
@@ -296,7 +303,7 @@ def display_gene_results(text_config: dict):
             # Provide a download button for the candidate genes data
             ctx_left.download_button(
                 label="Download Selected Genes",
-                data=dataframe_to_csv(gene_data_df),
+                data=pfutil.dataframe_to_csv(gene_data_df),
                 file_name="candidate-genes.csv",
                 mime="text/csv",
             )
@@ -322,7 +329,7 @@ def display_gene_results(text_config: dict):
             compress_data = len(peptide_data_df) > 20000
 
             # Convert the DataFrame to CSV format, compressing if necessary
-            peptides_csv_data = dataframe_to_csv(peptide_data_df, compress_data, 'selected-genes-peptides.csv')
+            peptides_csv_data = pfutil.dataframe_to_csv(peptide_data_df, compress_data, 'selected-genes-peptides.csv')
 
             # Determine the file name and MIME type based on compression
             file_name = "selected-genes-peptides.csv" + (".zip" if compress_data else "")
@@ -341,7 +348,8 @@ def display_gene_results(text_config: dict):
         if rc.button("Prepare Download for Genes"):
             # Call the function to generate and display the download button
             generate_csv_and_download_genes(dc, pc)
-        
+    
+    st.divider()
     st.write(f"## Enrichment Analysis")
     st.write("The table below provides an overview of enrichment analysis for broad classes of subcellular locations (or cellular components) for the set of filtered genes.")
     with st.expander('More details about the analysis'):
@@ -352,8 +360,26 @@ def display_gene_results(text_config: dict):
 
     selected_genes = st.session_state.filtered_genes_df.gene_id.values
     enrichment_df = st.session_state.rich_analyzer.perform_enrichment_analysis('class', selected_genes)
-    st.dataframe(enrichment_df.set_index("class").sort_values(by='selected', ascending=False))
+    st.dataframe(
+        enrichment_df.set_index("class").sort_values(by='selected', ascending=False),
+        use_container_width=True,
+        column_config={
+            "fselected": st.column_config.NumberColumn(
+                "fselected",
+                format="%.3f"
+            ),
+            "fbaseline": st.column_config.NumberColumn(
+                "fbaseline",
+                format="%.3f"
+            ),
+            "pvalue": st.column_config.NumberColumn(
+                "pvalue",
+                format="%.3f"
+            )
+        }
+    )
     
+    st.divider()
     st.write(f"## Filtering Diagnostic Plots")
     st.write(
         "In this section, you can visually explore how your chosen filters influence the distribution of gene sizes in the candidate set. " 
@@ -478,11 +504,9 @@ def display_peptide_results(text_config: dict):
     # Calculate the total number of peptides retained after filtering
     num_total_peptides = len(st.session_state.filtered_peptides_df)
 
-    with st.container():
-        # Add spacing for readability
-        st.write("\n")
-        st.write("\n")
+    st.divider()
 
+    with st.container():
         # Retrieve peptide results text from the configuration
         peptide_results_text = text_config["results"]["peptide_results"]
         # Display the title and description paragraphs
@@ -494,7 +518,14 @@ def display_peptide_results(text_config: dict):
         st.dataframe(
             st.session_state.summary_peptides_df.set_index("filter").drop(
                 "order", axis=1
-            )
+            ),
+            use_container_width=True,
+            column_config={
+                "proportion": st.column_config.NumberColumn(
+                    "proportion",
+                    format="%.3f"
+                )
+            }
         )
 
         # Display the number of peptides retained
@@ -549,7 +580,7 @@ def display_peptide_results(text_config: dict):
             None
             """
             # Convert the DataFrame to CSV format, compressing if necessary
-            csv_data = dataframe_to_csv(peptide_results_df, compress_data, 'candidate-peptides.csv')
+            csv_data = pfutil.dataframe_to_csv(peptide_results_df, compress_data, 'candidate-peptides.csv')
 
             # Determine the file name and MIME type based on compression
             file_name = "candidate-peptides.csv" + (".zip" if compress_data else "")
@@ -571,7 +602,7 @@ def display_peptide_results(text_config: dict):
         # Download button for filtering summary
         lc.download_button(
             label="Download Filtering Summary (Peptides)",
-            data=dataframe_to_csv(st.session_state.summary_peptides_df),
+            data=pfutil.dataframe_to_csv(st.session_state.summary_peptides_df),
             file_name="candidate-peptides-filter-summary.csv",
             mime="text/csv",
         )
@@ -611,13 +642,29 @@ def render_ui(text_config: dict, ui_config: dict, filter_config: dict):
     `display_gene_results`, and `display_peptide_results` are defined elsewhere.
     """
 
+    affiliations_col1, affiliations_col2 = st.columns(2)
+    with affiliations_col1:
+        st.markdown(f"<h6 style='text-align: center;'>Created by</h6>", unsafe_allow_html=True)
+        pfutil.show_image_with_url(
+            "data/malariagen-logo.png", "https://www.malariagen.net/", 70, 70,
+        )
+    with affiliations_col2:
+        st.markdown(f"<h6 style='text-align: center;'>Funded by</h6>", unsafe_allow_html=True)
+        pfutil.show_image_with_url(
+            "data/gates-foundation-logo.png", "https://www.gatesfoundation.org/", 90, 90,
+        )
+    
+    st.divider()
+
     # Create columns for layout and place the logo in the center column
-    col1, logo_col, col3 = st.columns([1, 4, 1])
+    _, logo_col, _ = st.columns([1, 4, 1])
     with logo_col:
-        st.image("logo-medium.png", use_column_width=True)
+        pfutil.show_image_with_url(
+            "data/logo-medium.png", None, 100, 100,
+        )
 
     # Display the app title
-    st.title(text_config["app_title"])
+    st.markdown(f"<h1 style='text-align: center; font-size: 5rem;'>{text_config['app_title']}</h1>", unsafe_allow_html=True)
 
     # Display the app description paragraphs
     for paragraph in text_config["app_description"]:
@@ -650,14 +697,17 @@ def render_ui(text_config: dict, ui_config: dict, filter_config: dict):
     display_peptide_results(text_config)
 
 
+
+
+
 # Main navigation
 def main():
 
     # Load text configuration.
-    TEXT_CONFIG = load_json_config("config/text.json")
+    TEXT_CONFIG = pfutil.load_json_config("config/text.json")
 
     # Load filters configuration.
-    FILTER_CONFIG = load_json_config("config/filters.json")
+    FILTER_CONFIG = pfutil.load_json_config("config/filters.json")
 
     # Load the original datasets into session state (only once).
     # These are big files, it will take a few seconds.
@@ -674,7 +724,7 @@ def main():
     if "rich_analyzer" not in st.session_state:
         st.session_state.rich_analyzer = EnrichmentAnalyzer('data/go-data-core.csv')
 
-    render_ui(TEXT_CONFIG, UI_CONFIG, FILTER_CONFIG)  # from pep.ui
+    render_ui(TEXT_CONFIG, pfui.UI_CONFIG, FILTER_CONFIG)  # from peptidefilter.ui
 
 
 if __name__ == "__main__":

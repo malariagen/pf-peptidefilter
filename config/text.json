@@ -1,14 +1,14 @@
 {
 
-    "app_title": "PepExplorer v2 (Filtering)",
+    "app_title": "Pf-PeptideFilter",
     "app_description": [
-        "This is a prototype tool within the PEPEX project designed to streamline the identification of candidate genes and peptides for potential peptide-based vaccine targets through a robust set of customizable filters. Users can apply various filtering criteria to enhance the reliability and efficacy of vaccine target selection.",
+        "Streamline the identification of candidate genes and peptides for potential peptide-based vaccine targets through a robust set of customizable filters. Users can apply various filtering criteria to enhance the reliability and efficacy of vaccine target selection.",
         "- **Human Identity Filtering** allows users to eliminate peptides that closely resemble human proteins, reducing the risk of autoimmune reactions by setting thresholds on percentage identity and alignment length against human exon sequences.", 
         "- **Strain Conservation Filtering** ensures that selected genes and peptides maintain consistent haplotypes across different Pf strains, which is crucial for developing vaccines that are effective against the majority of the parasite population.",
         "- **Indel Frequency Filtering** removes genes or peptides with high frequencies of insertions or deletions, particularly those causing frameshifts, thereby avoiding targets that may be prone to rapid mutation and loss of function.", 
         "- **Gene Expression Filtering** focuses on identifying genes that are actively expressed during specific life stages of the parasite, such as the liver stage or sporozoite stage, ensuring that vaccine targets are relevant and accessible during critical phases of infection.", 
         "- **Gene Homology Filtering** excludes genes lacking orthologs in selected species, facilitating the use of animal models for validating vaccine candidates or ensuring cross-species applicability.",
-        "Notice that genes and peptides are filtered independently (at the gene and peptide level) but some metrics are extrapolated (see details for each filter below). **This is work in progress, and not yet ready for wider public use**. For feedback please contact `jg10@sanger.ac.uk`."
+        "Notice that genes and peptides are filtered independently (at the gene and peptide level) but some metrics are extrapolated (see details for each filter below). For feedback please contact `support@malariagen.net`."
     ],
 
 
