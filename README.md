@@ -13,6 +13,9 @@ A Streamlit-based interactive web application for filtering and analyzing *Plasm
 - **Diagnostic Plots**: Visual exploration of gene size distributions across filtering steps
 - **Data Export**: Download filtered gene and peptide datasets with customizable formats
 
+## Dependencies
+Please use `requirements.txt` and Python 3.12
+
 ## Contact
 
 For questions or issues, please contact `support@malariagen.net` or open an issue on GitHub.
