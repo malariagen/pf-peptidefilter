@@ -148,9 +148,9 @@ user-selected percentile of the gene's peptide values (default: 75th percentile)
 
 ## 6. Methods — the expanded configuration paragraph *(revision draft, not yet in print)*
 
-This is the paragraph added for the revision. The corrected version is in
-`sensitive-analysis-plan.md` (the original is preserved beneath it under "Superseded text") and in
-§02 of `analysis/report.html`. Three clauses changed:
+This is the paragraph added for the revision. The corrected version is in §04 of
+`analysis/report.html`, under "Redrafted paragraph"; the original is preserved beside it. (It is
+also in the analysis plan, which is not in the repository.) Three clauses changed:
 
 | clause | was | is |
 |---|---|---|
@@ -161,7 +161,8 @@ This is the paragraph added for the revision. The corrected version is in
 One item in that paragraph is still open: the `[NEED TO ADD REF]` on the Day-4 justification. The
 claim is now supported by the application's own expression table, which can be cited alongside any
 external reference — genes at ≥1 CPM in all three replicates: **day 2 → 36, day 4 → 1,583, day 5 →
-4,375, day 6 → 4,657** (of 4,937 genes; median CPM 0.00 / 22.09 / 64.77 / 67.45). Day 2 is unusable
+4,375, day 6 → 4,657** (of 4,937 genes; median CPM, pooled over replicates, 0.00 / 22.09 / 64.77 /
+67.45). Day 2 is unusable
 at this rule and days 5 and 6 are near saturation (89% and 94% of all genes), so day 4 is the only
 one of the four that is both well-powered and selective. An external reference is still preferable.
 

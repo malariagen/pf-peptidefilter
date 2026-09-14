@@ -1,0 +1,196 @@
+Report figures: every narrative number not produced by the other scripts.
+pandas 1.5.1, numpy 1.26.4
+
+Harness validation (the app's own figures, from pepfilter_headless.validate):
+  all six published figures reproduce
+
+==============================================================================
+1. Percentile versus count, conservation filter (report section 04)
+==============================================================================
+  conservation isolated, gene rule 95 / threshold 0.99 : 2107 genes
+
+  Of the published 253:
+    kept on fewer than 95% of their peptides at >=0.99 : 19
+
+  Genome-wide, the two readings disagree as follows.
+  Non-strict count reading (a gene 'meets the count' if fraction >= 0.95),
+  which is the reading the report uses:
+    admitted although fewer than 95% of peptides pass : 99
+    rejected although at least 95% of peptides pass   : 4
+      of which the percentile column is present (the interpolation disagrees with the count) : 2
+        PF3D7_0714500  true fraction 0.9500  hap_top_hap_freq_p05 0.98988
+        PF3D7_1443800  true fraction 0.9500  hap_top_hap_freq_p05 0.98982
+      of which the percentile column is missing (NaN, so the test is False whatever the peptides say) : 2
+        PF3D7_0812200  true fraction 0.9500  hap_top_hap_freq_p05 NaN
+        PF3D7_1440300  true fraction 1.0000  hap_top_hap_freq_p05 NaN
+
+  Strict count reading (fraction > 0.95), for completeness:
+    admitted although 95% or fewer pass : 117
+    rejected although more than 95% pass: 1
+
+  Worked example quoted in the report:
+    PF3D7_0308800: 10 peptides, 9 at >=0.99 (90.0%), hap_top_hap_freq_p05 0.9914, in the 253: True
+
+==============================================================================
+2. Indel filter: every control, to test for a stringent arm (departure 2)
+==============================================================================
+  baseline (any type, any effect, <=0.05, 100% rule) : 253 genes
+
+  frequency threshold swept down:
+    <=0.05  : 253 genes
+    <=0.04  : 253 genes
+    <=0.03  : 253 genes
+    <=0.02  : 253 genes
+    <=0.01  : 253 genes
+    <=0.0   : 253 genes
+    lowest non-zero value present in the gene metric: 0.0570
+  gene rule: indel_gene_pc default is 100 (maximum offered is 100)
+
+  which indels are counted (type x effect):
+    type=Any              effect=Any              : 253 genes
+    type=Any              effect=Only Frameshifts : 294 genes
+    type=Only Insertions  effect=Any              : 280 genes
+    type=Only Insertions  effect=Only Frameshifts : 297 genes
+    type=Only Deletions   effect=Any              : 260 genes
+    type=Only Deletions   effect=Only Frameshifts : 294 genes
+
+==============================================================================
+3. R2.1: the two stage-independence runs (report section 03)
+==============================================================================
+  sporozoite stage substituted for day 4 : 695 genes / 27310 peptides, antigens retained: none
+  expression and orthology both removed  : 1142 genes / 41332 peptides, antigens retained: none
+  human similarity and indels only       : 2397 genes, antigens retained: ['AMA1', 'CelTOS', 'RH5']
+
+==============================================================================
+4. The six manuscript corrections (report section 04)
+==============================================================================
+  correction 1  conservation + human as the app ran it (human rule 75%) : 1274 genes   [report: 1,274]
+                the same sentence run as written (human rule 95%)      : 158 genes   [report: 158]
+                joint-subset reading, all three criteria at once        : 92 of 1274   [report: 92]
+                joint-subset reading, length criterion dropped         : 1133 of 1274   [report: 1,133]
+  correction 2  conservation only, 95% rule, >=0.99  : (2107, 84556)   [report: 2,107 / 84,556]
+                conservation only, 99% rule, >=0.99  : (1517, 42208)   [report: 1,517 / 42,208]
+                conservation only, 95% rule, >=0.95  : 3824 genes   [report: 3,824]
+  correction 3  indel isolated at <=0.05 (isolated run, NaN leak included) : 3451 genes
+                genes at or below 0.05 on the indel metric alone           : 3457   [report: 3,457]
+                genes strictly below 0.05 on the indel metric alone        : 3457   (the '<5%' and '<=5%' readings agree)
+                M253 with the indel gene rule at 95%                      : (291, 13772)   [report: 291 / 13,772]
+  correction 4  M253 with P. vivax only        : 253 genes   [report: 253]
+                M253 with P. vivax AND P. berghei : 251 genes   [report: 251]
+
+  correction 5  'jointly': how often the identity-passing and length-passing
+                peptide subsets of a gene differ.
+                genes whose passing counts differ            : 4840   [report: 4,840]
+                genes whose passing subsets differ at all    : 4846   [report: 4,846]
+                equal counts but different peptides          : 6   [report: 6]
+                of the 253, under 75% of peptides pass both human
+                conditions at once                          : 10   [report: 10]
+                  PF3D7_1203200  70.0%
+                  PF3D7_0721100  70.8%
+                  PF3D7_0628500  71.0%
+                  PF3D7_0722700  71.4%
+                  PF3D7_1237700  71.4%
+                  PF3D7_1404400  72.2%
+                  PF3D7_0512000  72.7%
+                  PF3D7_1308100  73.3%
+                  PF3D7_1015100  74.4%
+                  PF3D7_1343400  74.5%
+
+==============================================================================
+5. How close the 253 sit to the 0.99 conservation cut (report section 05, S5)
+==============================================================================
+  of the 253, within 0.001 of 0.99 : 18   [report: 18]
+  of the 253, within 0.002 of 0.99 : 33   [report: 33]
+  of the 253, within 0.005 of 0.99 : 89   [report: 89]
+  closest to the cut : 0.99007   [report: 0.99007]
+  genome-wide in [0.985, 0.995) : 1218   [report: 1,218]
+
+==============================================================================
+6. Day-2/4/5/6 expression, and the library-depth reading of it (S6)
+==============================================================================
+  Genes at >=1 CPM, by stage. 'Median CPM' is the median over all replicate
+  values pooled, not the median of per-gene medians; both are shown.
+  stage         all reps   >=1 rep   median (pooled)   median (of gene medians)   zero in all reps
+  Day 2               36      1486              0.00                       0.00               3367
+  Day 4             1583      4364             22.09                      25.02                489
+  Day 5             4375      4766             64.77                      65.82                 46
+  Day 6             4657      4793             67.45                      67.39                  8
+  Sporozoite        3698      4804             26.46                      23.94                  0
+
+  Summed CPM per replicate (a transcriptome-wide CPM total should be 1e6):
+    Day 2        679,169 / 433,162 / 15,682
+    Day 4        755,198 / 1,012,068 / 537,141
+    Day 5        913,866 / 1,019,839 / 974,892
+    Day 6        834,453 / 801,665 / 949,551
+    Sporozoite   2,392,887 / 2,116,339 / 5,899,330 / 1,825,295 / 3,119,525
+
+==============================================================================
+7. Defects found in shipped columns
+==============================================================================
+  num_peptides: genes where it is exactly one short : 4423 of 4937   [report: 4,423 of 4,937]
+               distinct differences observed        : [-1, 0]
+               column total vs peptide rows         : 374,902 vs 379,325   [report: 374,902 vs 379,325]
+               over the published catalogue         : 9,861 vs 10,088   [report: 9,861 vs 10,088]
+
+  hap_top_hap_freq percentile columns entirely NaN : 7 genes
+  For each, what its own peptides actually say (this column is tested by the
+  conservation filter, so a NaN is a silent rejection):
+    PF3D7_0812220   29 peptides,  29 with a haplotype frequency, min 0.9889, share >=0.99 93.1%, in the 253: False
+    PF3D7_0812200   40 peptides,  40 with a haplotype frequency, min 0.9045, share >=0.99 95.0%, in the 253: False
+    PF3D7_1038400  956 peptides,   0 with a haplotype frequency, min nan, share >=0.99 0.0%, in the 253: False
+    PF3D7_1335300  325 peptides,   0 with a haplotype frequency, min nan, share >=0.99 0.0%, in the 253: False
+    PF3D7_1335400  313 peptides,   0 with a haplotype frequency, min nan, share >=0.99 0.0%, in the 253: False
+    PF3D7_1440300   45 peptides,  45 with a haplotype frequency, min 0.9917, share >=0.99 100.0%, in the 253: False
+    PF3D7_1440200  156 peptides, 156 with a haplotype frequency, min 0.9716, share >=0.99 92.9%, in the 253: False
+
+==============================================================================
+8. Direction of change: relaxations and tightenings against the 253
+==============================================================================
+  scenario                    genes   direction  253 kept  strict subset  superset
+  HUMAN-RELAXED                 376  relaxation       253          False      True
+  HUMAN-STRINGENT               183  tightening       183           True     False
+  HUMAN-IDONLY-RELAXED          587  relaxation       253          False      True
+  HUMAN-IDONLY-BASELINE         558  relaxation       253          False      True
+  HUMAN-IDONLY-STRINGENT        506  relaxation       253          False      True
+  CONSERVATION-RELAXED          417  relaxation       253          False      True
+  CONSERVATION-STRINGENT        176  tightening       176           True     False
+  INDEL-RELAXED-FREQ            260  relaxation       253          False      True
+  INDEL-RELAXED-RULE            291  relaxation       253          False      True
+  EXPRESSION-RELAXED            596  relaxation       253          False      True
+  EXPRESSION-STRINGENT          251  tightening       251           True     False
+  ORTHOLOGY-RELAXED             290  relaxation       253          False      True
+  ORTHOLOGY-STRINGENT           251  tightening       251           True     False
+
+  tightenings (fewer genes than 253) : 4
+  relaxations (more genes than 253)  : 9
+
+==============================================================================
+9. Where the eight antigens sit on each metric (report section 05, S2)
+==============================================================================
+  best (lowest) value of max_indel_freq_type_any_fs_any_p100 : 0.0 (3457 genes tie)
+  the best attainable indel genome percentile is therefore 30.0%
+
+  antigen   gene            indel value  indel pct  at ceiling  cons pct  ident pct     pv     pb     pk
+  CSP       PF3D7_0304600        0.0000     30.00%        True     0.30%      6.90%  False   True   True
+  AMA1      PF3D7_1133400        0.0000     30.00%        True     0.00%     45.00%   True   True   True
+  RH5       PF3D7_0424100        0.0000     30.00%        True    17.50%     56.40%  False  False  False
+  TRAP      PF3D7_1335900        0.2650     16.60%       False     0.10%     16.70%   True   True   True
+  CelTOS    PF3D7_1216600        0.0000     30.00%        True     0.00%     51.50%   True   True   True
+  EBA175    PF3D7_0731500        0.2170     19.20%       False     2.00%     50.20%  False  False  False
+  MSP1      PF3D7_0930300        0.8170      1.90%       False     0.80%     56.70%   True   True   True
+  LSA3      PF3D7_0220000        0.5760      7.40%       False    12.60%     56.70%  False  False  False
+
+  antigens exactly at the best indel value : 4 (CSP, AMA1, RH5, CelTOS)
+  antigens below it : TRAP, EBA175, MSP1, LSA3
+
+  conservation percentile: in the bottom 1% : 5 (CSP, AMA1, TRAP, CelTOS, MSP1)
+                           in the bottom 2% : 5 (CSP, AMA1, TRAP, CelTOS, MSP1)
+                           in the bottom 3% : 6
+                           sixth lowest is  : EBA175 at 2.00%
+
+  Recorded orthologues. The filter tests a boolean column per species; a False
+  is the absence of a recorded one-to-one orthologue in the shipped table, not
+  evidence that no counterpart exists in that species.
+    no recorded P. vivax     orthologue : CSP, RH5, EBA175, LSA3
+    no recorded P. berghei   orthologue : RH5, EBA175, LSA3
+    no recorded P. knowlesi  orthologue : RH5, EBA175, LSA3
