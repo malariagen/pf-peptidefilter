@@ -38,6 +38,7 @@ h3{font-size:1.12rem;line-height:1.35;font-family:"IBM Plex Sans",sans-serif;fon
 p{margin:0 0 1rem}
 p:last-child{margin-bottom:0}
 a{color:var(--accent)}
+a[href^="#"]{color:inherit;text-decoration:none;border-bottom:1px solid var(--accent-line);font-weight:500}
 code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.88em}
 .eyebrow{font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:500}
 
@@ -105,7 +106,7 @@ footer{border-top:1px solid var(--rule);padding-top:22px;font-size:.82rem;color:
 <header>
   <span class="eyebrow">Pf-PeptideFilter · Revision working note</span>
   <h1>Reviewer 2: threshold sensitivity and the vaccine-antigen benchmark</h1>
-  <p class="lede">The combined R2.1 / R2.3 analysis has been run; &sect;A answers each request in turn and carries the scientific review. Four of the draft plan&rsquo;s ten sensitivity scenarios do not work &mdash; three change nothing and one empties the catalogue &mdash; and the antigen benchmark returns “excluded” in every cell. Replacements are proposed and tested. Six wording corrections are copy-ready, five already carried in this report.</p>
+  <p class="lede">The combined R2.1 / R2.3 analysis has been run; <a href="#s01">&sect;01</a> answers each request in turn; <a href="#s05">&sect;05</a> carries the scientific review. Four of the draft plan&rsquo;s ten sensitivity scenarios do not work &mdash; three change nothing and one empties the catalogue &mdash; and the antigen benchmark returns “excluded” in every cell. Replacements are proposed and tested. Six wording corrections are copy-ready, five already carried in this report.</p>
   <div class="meta">
     <span><b>From</b> Andrew Balmer</span>
     <span><b>Analysis</b> <code>analysis/</code> on <code>add-manuscript-and-wiki</code></span>
@@ -114,67 +115,84 @@ footer{border-top:1px solid var(--rule);padding-top:22px;font-size:.82rem;color:
   </div>
 </header>
 
+<div class="callout note">
+  <span class="eyebrow">The answers, in six lines</span>
+  <dl class="kv">
+    <dt>R2.1</dt><dd><b>None of the eight benchmark antigens is retained</b>, under any of the 15 configurations. Strain conservation is the criterion responsible in every case.</dd>
+    <dt>R2.3</dt><dd>The catalogue ranges <b>176 to 1,142 genes</b> around the published 253. Most sensitive to expression and conservation; least to indel frequency.</dd>
+    <dt>Why</dt><dd>Six of the eight antigens sit in the bottom 2% of the genome for conservation. Not a life-stage artefact &mdash; a sporozoite-stage filter still retains none of them, and removing expression and orthology altogether still retains none.</dd>
+    <dt>Plan changes</dt><dd>Four of the plan&rsquo;s ten scenarios measure nothing or empty the catalogue. Replacements are tested and selectable in the app. Four departures in total, each with its evidence in <a href="#s01">&sect;01</a>.</dd>
+    <dt>For the paper</dt><dd>Six wording corrections, <b>five of them already in print</b>. Copy-ready in <code>MANUSCRIPT-CORRECTIONS.md</code>; the reasoning is in <a href="#s04">&sect;04</a>.</dd>
+    <dt>Confidence</dt><dd>Every figure comes from the app&rsquo;s own <code>filter_datasets()</code>. <code>validate()</code> reproduces the six published preprint numbers before any script runs, and aborts on drift.</dd>
+  </dl>
+</div>
+
+<div class="prose">
+  <h3>How this is organised, and what to read</h3>
+  <p>The plan comes first, then the two analyses in full. <b><a href="#s04">&sect;04</a> gathers every change the manuscript needs into one place</b>, so the text edits can be worked through in a single pass. <a href="#s05">&sect;05</a> onward is additional.</p>
+</div>
+
+<dl class="kv">
+  <dt>Plain</dt><dd>What the analysis did, in ordinary language, with the one worked example that governs everything else. <b>Start here.</b></dd>
+  <dt><a href="#s01">&sect;01</a></dt><dd><b>Every item in the plan</b>, numbered, with where each one landed &mdash; then the four places the work departs from it, each with the run that forced it.</dd>
+  <dt><a href="#s02">&sect;02</a></dt><dd><b>R2.3 in full</b> &mdash; the fifteen scenarios, what each one moves, and the ones that had to be replaced.</dd>
+  <dt><a href="#s03">&sect;03</a></dt><dd><b>R2.1 in full</b> &mdash; the eight antigens, why each fails, and how far each sits from selectable.</dd>
+  <dt><a href="#s04">&sect;04</a></dt><dd><b>Every manuscript change in one place</b> &mdash; the six wording corrections, the redrafted methods paragraph, and the Results passage drafted for Step 20. Sentence as published, replacement beneath.</dd>
+  <dt><a href="#s05">&sect;05</a></dt><dd><b>Additional comments</b>, not part of the plan &mdash; how the numbers were produced and checked, then eight points that came out of the work.</dd>
+  <dt><a href="#s06">&sect;06</a>&ndash;07</dt><dd>The outputs proposed for the supplement, and the decisions still open.</dd>
+</dl>
+
+
 <!-- Plain -->
-<section>
+<section id="plain">
   <div class="shead"><span class="snum">Plain</span><h2>What this analysis did, in plain terms</h2></div>
   <div class="prose">
-    <p><b>What was asked, and why.</b> Reviewer 2 asked for two related checks. R2.3: is the catalogue Pf-PeptideFilter produces stable when the main thresholds move, or an artefact of one hand-picked setting? R2.1: how do well-known malaria vaccine antigens behave under the same filtering logic? Jacob&rsquo;s brief was to answer both together, since the antigen panel is most useful read alongside the threshold sensitivity rather than as a separate pass/fail exercise.</p>
-    <p><b>What the app does.</b> Pf-PeptideFilter starts from predicted peptides and keeps genes only if they pass five filters: similarity to human proteins, conservation across parasite variation data, low indel burden, expression in the selected life-cycle stage, and an optional orthology requirement. The conservation filter, for instance, asks whether enough peptides from a gene are conserved at or above the selected parasite-frequency threshold &mdash; so a gene can fail because too few of its peptides are conserved, even where individual peptides look good.</p>
-
-    <p><b>A worked example, because this one detail governs everything else.</b> Each filter is measured <i>per peptide</i>, then summarised to the gene by a <b>percentile</b> rather than by counting how many peptides passed. Take <code>PF3D7_0308800</code>, a real gene in the 253. It has ten peptides, with haplotype frequencies 0.9876, 0.9960, 0.9960, 0.9987, 0.9990, 0.9990, 0.9991, 0.9995, 0.9996 and 0.9999.</p>
-
-    <p>The conservation threshold is 0.99, and the gene rule is set to &ldquo;95% of peptides&rdquo;.
-    Count them and <b>nine of the ten pass — 90%</b>, which is short of 95%, so on a plain reading
-    the gene should be dropped. The app instead takes the 5th percentile of those ten values, which
-    interpolates between the lowest two and gives <b>0.9914</b>; since 0.9914 is above 0.99, the
-    gene <b>passes</b>.</p>
-
-    <p>So &ldquo;95% of peptides must pass&rdquo; describes the control&rsquo;s label rather than the arithmetic underneath. The two agree for most genes and diverge for a minority: 19 of the 253 are retained on fewer than 95% of their peptides actually meeting the threshold. That is why the methods paragraph needed rewording, why the antigen table reports the slider setting and the true peptide fraction as separate columns, and why a reader should not convert one into the other. The indel filter is the exception &mdash; its rule sits at 100%, so the percentile is the maximum and &ldquo;every peptide must pass&rdquo; is literally true.</p>
-
+    <p><b>1 &middot; What was asked.</b> Reviewer 2 asked for two related checks. R2.3: is the catalogue Pf-PeptideFilter produces stable when the main thresholds move, or an artefact of one hand-picked setting? R2.1: how do well-known malaria vaccine antigens behave under the same filtering logic? Both are answered in one run of 15 configurations, as the plan specified.</p>
     
-    <p><b>The reference catalogue.</b> The stricter M253 setting is the app default plus liver-stage day-4 expression and <i>P. vivax</i> orthology. It retains 253 genes and 10,088 peptides. The app&rsquo;s default catalogue retains 1,142 genes and 41,332 peptides, and M253 is a strict subset of that broader default output.</p>
-    <p><b>The sensitivity analysis.</b> Fifteen configurations were run. Each changes one filter from the M253 reference, then records catalogue size and overlap with both M253 and the app default at gene and peptide level. Four of the ten draft scenarios were rejected for testing nothing useful &mdash; the two human-identity settings (&le;90% and &le;70%) were inert, an indel-stringent setting was inert, and requiring perfect conservation emptied the catalogue &mdash; and a fifth was replaced because its value cannot be selected in the app. Empirically meaningful, on-grid alternatives took their place, with the rejected options kept in <code>rejected_scenarios.csv</code>.</p>
-    <p><b>The antigen benchmark.</b> The eight requested antigens were resolved to stable PlasmoDB gene IDs and checked in every run: CSP, AMA1, RH5, TRAP, CelTOS, EBA175, MSP1 and LSA3. &ldquo;Excluded&rdquo; means the gene did not survive all active filters for that run. It does <em>not</em> mean the antigen is biologically poor, non-immunogenic or irrelevant as a vaccine target. The antigen table reports the slider setting being tested, the underlying fraction of peptides passing, and a genome-wide percentile rank, so a near miss can be told from a severe failure.</p>
-    <p><b>What was found.</b> Single-filter catalogue sizes range from 176 to 1,142 genes around the 253-gene M253 baseline. Relaxing filters adds genes, tightening removes them, and combined relaxations are super-additive because some genes fail more than one filter at once. None of the eight benchmark antigens re-enters the catalogue in any of the 15 scenarios. All eight fail the configured strain-conservation criterion, five of the eight sit in the bottom 1% of all genes on the conservation percentile, and a sixth is just outside at 2.03%. The interpretation is narrow: the tool rejects these established antigens because they fit this conservation-first logic poorly, and the analysis says nothing about their vaccine efficacy.</p>
-    <p><b>What this cannot tell us.</b> The benchmark does not test immune protection, epitope presentation, formulation, clinical performance, or whether a rejected antigen is a bad target. The life-stage and orthology filters are also not equally fair to all eight, because the panel mixes pre-erythrocytic and blood-stage biology and includes <i>P. falciparum</i>-restricted targets. The conservation conclusion is the robust one: even with expression and orthology relaxed, or swapped to a sporozoite-stage setting, the eight are still not retained.</p>
+
+    <p><b>2 &middot; What was run.</b> The reference catalogue: The stricter M253 setting is the app default plus liver-stage day-4 expression and <i>P. vivax</i> orthology. It retains 253 genes and 10,088 peptides. The app&rsquo;s default catalogue retains 1,142 genes and 41,332 peptides, and M253 is a strict subset of that broader default output.</p>
+    <p><b>The fifteen configurations.</b> Fifteen configurations were run. Each changes one filter from the M253 reference, then records catalogue size and overlap with both M253 and the app default at gene and peptide level. Four of the ten draft scenarios were rejected for testing nothing useful &mdash; the two human-identity settings (&le;90% and &le;70%) were inert, an indel-stringent setting was inert, and requiring perfect conservation emptied the catalogue &mdash; and a fifth was replaced because its value cannot be selected in the app. Empirically meaningful, on-grid alternatives took their place, with the rejected options kept in <code>rejected_scenarios.csv</code>.</p>
+    <p><b>The antigen benchmark.</b> The eight requested antigens were resolved to stable PlasmoDB gene IDs and checked in every run: CSP, AMA1, RH5, TRAP, CelTOS, EBA175, MSP1 and LSA3. &ldquo;Excluded&rdquo; means the gene did not survive all active filters for that run. The antigen table reports the slider setting being tested, the underlying fraction of peptides passing, and a genome-wide percentile rank, so a near miss can be told from a severe failure.</p>
+    <p><b>3 &middot; What was found.</b> Single-filter catalogue sizes range from 176 to 1,142 genes around the 253-gene M253 baseline. Relaxing filters adds genes, tightening removes them, and combined relaxations are super-additive because some genes fail more than one filter at once. None of the eight benchmark antigens re-enters the catalogue in any of the 15 scenarios. All eight fail the configured strain-conservation criterion, five of the eight sit in the bottom 1% of all genes on the conservation percentile, and a sixth is just outside at 2.03%. The tool rejects them because they fit this conservation-first logic poorly.</p>
+    <p><b>4 &middot; What this cannot tell us.</b> The benchmark does not test immune protection, epitope presentation, formulation, clinical performance, or whether a rejected antigen is a bad target. The life-stage and orthology filters are also not equally fair to all eight, because the panel mixes pre-erythrocytic and blood-stage biology and includes <i>P. falciparum</i>-restricted targets. The conservation conclusion is the robust one: even with expression and orthology relaxed, or swapped to a sporozoite-stage setting, the eight are still not retained.</p>
   </div>
 </section>
 
 <!-- A -->
-<section>
-  <div class="shead"><span class="snum">A</span><h2>Response to each request</h2></div>
+<section id="s01">
+  <div class="shead"><span class="snum">01</span><h2>Response to each plan item</h2></div>
   <div class="prose">
-    <p>Everything asked for in Jacob&rsquo;s email and the attached plan, with what was produced and where it lives. Quotations are verbatim from the email and from Steps 1&ndash;20. Four requests were answered <em>differently</em> from the way they were specified; the reasons are below.</p>
-    <p>Reviewer 2 asked for two things: <b>R2.1</b>, benchmark the licensed and leading malaria vaccine antigens, and <b>R2.3</b>, add a threshold sensitivity analysis. The email&rsquo;s decision was to answer them together &mdash; <em>&ldquo;The idea here is to address R2.1 and R2.3 together in a single sensitivity-analysis run, rather than treating them as two separate analyses.&rdquo;</em> &mdash; so one set of 15 configurations carries both answers.</p>
+    <p>Each item in the plan, numbered, with what was produced and where it lives. Quotations are verbatim from Steps 1&ndash;20. Four were answered <em>differently</em> from the way they were specified; the reasons follow the table.</p>
+    <p>Reviewer 2 asked for two things: <b>R2.1</b>, benchmark the licensed and leading malaria vaccine antigens, and <b>R2.3</b>, add a threshold sensitivity analysis. One set of 15 configurations carries both answers, as the plan specified.</p>
   </div>
 
   <div class="tablebox">
     <table>
-      <thead><tr><th>Asked for</th><th>Delivered, and where</th><th>Status</th><th>What it showed</th></tr></thead>
+      <thead><tr><th class="num">#</th><th>Asked for</th><th>Delivered, and where</th><th>Status</th><th>What it showed</th></tr></thead>
       <tbody>
-        <tr><td>&ldquo;one main supplementary sensitivity table covering the baseline and relaxed/stringent scenarios&rdquo;</td><td>15 rows &times; 22 columns. <code>supplementary_table_A_sensitivity.csv</code>; trimmed to 8 columns in &sect;03</td><td><span class="chip pass">answered</span></td><td>Catalogue ranges 176&ndash;1,142 genes across single-filter moves from a 253-gene baseline</td></tr>
-        <tr><td>&ldquo;comparison with both the default catalogue and the 253 gene catalogue&rdquo;</td><td>Shared count, % retained and Jaccard against <b>both</b> references, at gene <em>and</em> peptide level &mdash; 12 of the 22 columns</td><td><span class="chip pass">answered</span></td><td>M253 is a strict subset of APP: 253 of 1,142 genes, Jaccard 0.222</td></tr>
-        <tr><td>&ldquo;antigen retention for every scenario (column)&rdquo;</td><td><code>benchmark_antigens_retained</code>, column 22 of Table A; also the full 8 &times; 15 grid in <code>antigen_retention_matrix.csv</code></td><td><span class="chip pass">answered</span></td><td>Reads <span class="mono">none retained</span> in all 15 rows &mdash; spelled that way rather than <span class="mono">None</span>, which pandas reads back as a missing value. Dropped from the report&rsquo;s <em>display</em> table for that reason &mdash; it is in the CSV, and this is the disclosure</td></tr>
-        <tr><td>&ldquo;one smaller antigen-focused supplementary table explaining when each antigen gene passes or fails&rdquo;</td><td>8 rows &times; 32 columns. <code>supplementary_table_B_antigens.csv</code>; 9 columns shown in &sect;04</td><td><span class="chip pass">answered</span></td><td>All eight fail conservation; <code>M253_exclusion_reason</code> lists every filter each one fails, not just the first</td></tr>
-        <tr><td>&ldquo;three settings for each filter: relaxed, default and stringent, with a short rationale for each choice&rdquo;</td><td>Five filters &times; three settings, rationale per value in &sect;03</td><td><span class="chip fail">answered differently</span></td><td>The indel filter <b>has no stringent direction on any of its four controls</b> &mdash; it gets a relaxation-only pair. Verified, not assumed: see &sect;03</td></tr>
-        <tr><td>&ldquo;vary one filter at a time, keeping all other filters fixed&rdquo;</td><td>All 15 scenarios differ from M253 in one filter only</td><td><span class="chip pass">answered</span></td><td>Holds for all 15, though three rows change two <em>settings</em> of the human filter &mdash; see the departures below</td></tr>
-        <tr><td>&ldquo;two reference baselines&rdquo; &mdash; application defaults, and &ldquo;the 253 gene example, using the exact configuration that generated that result&rdquo;</td><td><code>config_APP.json</code>, <code>config_M253.json</code>, both replayable</td><td><span class="chip pass">answered</span></td><td>APP 1,142 / 41,332; M253 253 / 10,088. The email&rsquo;s description of M253 as &ldquo;default + activating the last two filters&rdquo; is exactly right and reproduces</td></tr>
-        <tr><td>&ldquo;For every run, we record the number of retained genes and peptides and the overlap with both reference outputs&rdquo;</td><td>Columns 4&ndash;17 of Table A; plus per-run gene and peptide catalogues, 45 files in <code>run_outputs/</code></td><td><span class="chip pass">answered</span></td><td>All 15 reproduce from their frozen configs; containment verified by set inclusion at both levels</td></tr>
-        <tr><td>&ldquo;check if the antigens requested by the reviewer are retained or discarded: CSP, AMA1, RH5, TRAP, CelTOS, EBA175, MSP1 and LSA3&rdquo;</td><td>All eight, identified by stable PlasmoDB IDs, checked in all 15 runs</td><td><span class="chip pass">answered</span></td><td>None retained in any of the 15. Identifiers are not substring matches &mdash; MTRAP, TRAPPC2/4/5, MSP10 and MSP11 are separate rows</td></tr>
-        <tr><td>&ldquo;the interpretation should be that we are testing how established vaccine antigens behave under the specific filtering logic of the app, not if they are good or bad vaccine targets&rdquo; &mdash; flagged <b>Important</b></td><td>&sect;04 opening and closing paragraphs</td><td><span class="chip pass">answered</span></td><td>&sect;04 states it explicitly and the &ldquo;working as intended&rdquo; reading is marked as interpretation rather than output</td></tr>
-        <tr><td>&ldquo;check the scenario definition and the rationale and more importanly if they make sense empirically (e.g., perhaps one configuration removes all genes which is obviously meaningless)&rdquo;</td><td><code>rejected_scenarios.csv</code> &mdash; five scenarios tested and discarded with reasons</td><td><span class="chip pass">answered</span></td><td><b>This is where the real findings came from.</b> Four of the plan&rsquo;s ten sensitivity scenarios do nothing or empty the catalogue; the exact case Jacob anticipated occurred (conservation = 1.00 &rarr; 0 genes)</td></tr>
-        <tr><td>Step 10 &mdash; the per-run output list (catalogue size; shared/%/Jaccard vs M253 and vs APP at both levels; direction-of-change counts)</td><td>All 18 specified quantities, as 22 columns with scenario/filter/setting/antigens</td><td><span class="chip pass">answered</span></td><td>Every numeric cell recomputes independently</td></tr>
-        <tr><td>Step 12 &mdash; &ldquo;benchmark-antigen identifier table&rdquo; as a named output</td><td>Folded into Table B: <code>antigen</code>, <code>gene_id</code>, <code>gene_name_in_app</code>, <code>n_peptides</code></td><td><span class="chip pass">answered</span></td><td>Not a separate file; the four identifier columns lead Table B instead</td></tr>
-        <tr><td>Step 14 &mdash; &ldquo;report the relevant <b>percentage of peptides passing</b> rather than only a binary PASS/FAIL&rdquo;, to distinguish &ldquo;94% of peptides pass a 95% requirement&rdquo; from &ldquo;only 20% pass&rdquo;</td><td><code>*_true_pct_peptides_passing</code> for all three peptide-extrapolated filters, alongside <code>*_gene_rule_pct_tolerated</code></td><td><span class="chip pass">answered</span></td><td>Reported for all three peptide-extrapolated filters. Conservation, % of peptides passing: AMA1 27.4, TRAP 22.8, CelTOS 50.0, MSP1 54.7, LSA3 69.7, EBA175 72.0, CSP 74.4, RH5 80.8, against a 95% requirement</td></tr>
-        <tr><td>Step 14 &mdash; &ldquo;final M253 status&rdquo; and &ldquo;final APP status&rdquo; per antigen</td><td><code>M253_status</code>, <code>APP_status</code></td><td><span class="chip pass">answered</span></td><td>&ldquo;excluded&rdquo; in all 16 cells</td></tr>
-        <tr><td>Steps 8, 9 and 15 &mdash; &ldquo;The analysis therefore requires <b>12 unique runs</b>&rdquo; / &ldquo;should have <b>12 rows</b>&rdquo;</td><td>15 runs</td><td><span class="chip fail">answered differently</span></td><td>12 + 3 identity-only rows. The count difference is entirely the human filter: see departure 1</td></tr>
-        <tr><td>Step 17 / Step 20 &mdash; an 8 &times; 12 retained/excluded matrix, &ldquo;particularly well as a simple supplementary heatmap&rdquo;, to show whether an antigen &ldquo;re-enters the catalogue under a modest relaxation&rdquo;</td><td>Replaced by the distance-to-threshold figure. Matrix still shipped as <code>antigen_retention_matrix.csv</code> (8 &times; 15)</td><td><span class="chip fail">answered differently</span></td><td>Every cell is &ldquo;excluded&rdquo;, so the heatmap is one flat block and cannot show what Step 17 wanted. The figure answers the same question &mdash; how far from selectable is each antigen &mdash; which a uniform grid cannot</td></tr>
-        <tr><td>Step 19 &mdash; reproducibility outputs: a frozen config per run, gene- and peptide-level output per run, the identifier table, both supplementary tables, the retention matrix, and the scripts</td><td>15 configs, 45 run files, both tables, the matrix, the analysis/verification/rendering scripts, <code>provenance.txt</code>, <code>COLUMN-DEFINITIONS.md</code>, and the source of this report</td><td><span class="chip pass">answered</span></td><td>All 15 configs replay from disk to their table rows</td></tr>
-        <tr><td>Step 19 / Step 2 &mdash; &ldquo;The scenario definitions should be frozen before the filtering outputs are inspected&rdquo;</td><td>Scenarios were frozen, run, and then four were replaced after inspection</td><td><span class="chip fail">answered differently</span></td><td>Directly contradicted by the email&rsquo;s instruction to check the scenarios empirically. The final 15 were <b>not</b> pre-registered: see departure 3</td></tr>
-        <tr><td>Step 20 &mdash; a short Results summary with five named components</td><td>Proposed passage at the end of this section</td><td><span class="chip pass">answered</span></td><td>Drafted here for the first time, all five components covered, clearly marked as proposed text</td></tr>
-        <tr><td>Step 6 &mdash; &ldquo;The 5-CPM threshold is a <b>prespecified sensitivity-analysis value</b>, not a biologically validated boundary &hellip; It should be described as such&rdquo;</td><td>Stated in &sect;03 alongside the expression scenarios</td><td><span class="chip pass">answered</span></td><td>Stated explicitly wherever the 5&nbsp;CPM value is used</td></tr>
-        <tr><td>Step 18 &mdash; recovery of an antigen &ldquo;provides a useful face-validity benchmark &hellip; but does not demonstrate that its retained peptides are immunogenic or protective&rdquo;; an antigen &ldquo;may fail because it is highly polymorphic, despite having demonstrated biological or immunological relevance&rdquo;</td><td>&sect;04</td><td><span class="chip pass">answered</span></td><td>Both sentences now carried explicitly; the second is the substance of the result</td></tr>
-        <tr><td>The email&rsquo;s closing invitation: &ldquo;Feel free to modify the plan or suggest changes&rdquo;</td><td>Four departures, below, each with the evidence that forced it</td><td><span class="chip pass">answered</span></td><td>Three of the four were forced by the empirical check Jacob asked for</td></tr>
+        <tr><td class="num">1</td><td>&ldquo;one main supplementary sensitivity table covering the baseline and relaxed/stringent scenarios&rdquo;</td><td>15 rows &times; 22 columns. <code>supplementary_table_A_sensitivity.csv</code>; trimmed to 8 columns in <a href="#s02">&sect;02</a></td><td><span class="chip pass">answered</span></td><td>Catalogue ranges 176&ndash;1,142 genes across single-filter moves from a 253-gene baseline</td></tr>
+        <tr><td class="num">2</td><td>&ldquo;comparison with both the default catalogue and the 253 gene catalogue&rdquo;</td><td>Shared count, % retained and Jaccard against <b>both</b> references, at gene <em>and</em> peptide level &mdash; 12 of the 22 columns &middot; <a href="#s02">&sect;02</a></td><td><span class="chip pass">answered</span></td><td>M253 is a strict subset of APP: 253 of 1,142 genes, Jaccard 0.222</td></tr>
+        <tr><td class="num">3</td><td>&ldquo;antigen retention for every scenario (column)&rdquo;</td><td><code>benchmark_antigens_retained</code>, column 22 of Table A; also the full 8 &times; 15 grid in <code>antigen_retention_matrix.csv</code> &middot; <a href="#s03">&sect;03</a></td><td><span class="chip pass">answered</span></td><td>Reads <span class="mono">none retained</span> in all 15 rows, spelled that way because pandas reads <span class="mono">None</span> back as missing. Dropped from the display table for that reason; it is in the CSV</td></tr>
+        <tr><td class="num">4</td><td>&ldquo;one smaller antigen-focused supplementary table explaining when each antigen gene passes or fails&rdquo;</td><td>8 rows &times; 32 columns. <code>supplementary_table_B_antigens.csv</code>; 9 columns shown in <a href="#s03">&sect;03</a></td><td><span class="chip pass">answered</span></td><td>All eight fail conservation; <code>M253_exclusion_reason</code> lists every filter each one fails, not just the first</td></tr>
+        <tr><td class="num">5</td><td>&ldquo;three settings for each filter: relaxed, default and stringent, with a short rationale for each choice&rdquo;</td><td>Five filters &times; three settings, rationale per value in <a href="#s02">&sect;02</a></td><td><span class="chip fail">answered differently</span></td><td><b>No stringent direction on any of the indel filter&rsquo;s four controls</b>, so it gets a relaxation-only pair &mdash; see <a href="#s02">&sect;02</a></td></tr>
+        <tr><td class="num">6</td><td>&ldquo;vary one filter at a time, keeping all other filters fixed&rdquo;</td><td>All 15 scenarios differ from M253 in one filter only &middot; <a href="#s02">&sect;02</a></td><td><span class="chip pass">answered</span></td><td>Holds for all 15, though three rows change two <em>settings</em> of the human filter &mdash; see the departures below</td></tr>
+        <tr><td class="num">7</td><td>&ldquo;two reference baselines&rdquo; &mdash; application defaults, and &ldquo;the 253 gene example, using the exact configuration that generated that result&rdquo;</td><td><code>config_APP.json</code>, <code>config_M253.json</code>, both replayable &middot; <a href="#s02">&sect;02</a></td><td><span class="chip pass">answered</span></td><td>APP 1,142 / 41,332; M253 253 / 10,088. &ldquo;Default + activating the last two filters&rdquo; is exactly right and reproduces</td></tr>
+        <tr><td class="num">8</td><td>&ldquo;For every run, we record the number of retained genes and peptides and the overlap with both reference outputs&rdquo;</td><td>Columns 4&ndash;17 of Table A; plus per-run gene and peptide catalogues, 45 files in <code>run_outputs/</code> &middot; <a href="#s02">&sect;02</a></td><td><span class="chip pass">answered</span></td><td>All 15 reproduce from their frozen configs; containment verified by set inclusion at both levels</td></tr>
+        <tr><td class="num">9</td><td>&ldquo;check if the antigens requested by the reviewer are retained or discarded: CSP, AMA1, RH5, TRAP, CelTOS, EBA175, MSP1 and LSA3&rdquo;</td><td>All eight, identified by stable PlasmoDB IDs, checked in all 15 runs &middot; <a href="#s03">&sect;03</a></td><td><span class="chip pass">answered</span></td><td>None retained in any of the 15. Identifiers are not substring matches &mdash; MTRAP, TRAPPC2/4/5, MSP10 and MSP11 are separate rows</td></tr>
+        <tr><td class="num">10</td><td>&ldquo;the interpretation should be that we are testing how established vaccine antigens behave under the specific filtering logic of the app, not if they are good or bad vaccine targets&rdquo; &mdash; flagged <b>Important</b></td><td><a href="#s03">&sect;03</a> opening and closing paragraphs</td><td><span class="chip pass">answered</span></td><td><a href="#s03">&sect;03</a> states it explicitly and the &ldquo;working as intended&rdquo; reading is marked as interpretation rather than output</td></tr>
+        <tr><td class="num">11</td><td>&ldquo;check the scenario definition and the rationale and more importanly if they make sense empirically (e.g., perhaps one configuration removes all genes which is obviously meaningless)&rdquo;</td><td><code>rejected_scenarios.csv</code> &mdash; five scenarios tested and discarded with reasons &middot; <a href="#s02">&sect;02</a></td><td><span class="chip pass">answered</span></td><td><b>Where the real findings came from.</b> Four of the plan&rsquo;s ten scenarios do nothing or empty the catalogue, including the case it anticipated (conservation = 1.00 &rarr; 0 genes)</td></tr>
+        <tr><td class="num">12</td><td>Step 10 &mdash; the per-run output list (catalogue size; shared/%/Jaccard vs M253 and vs APP at both levels; direction-of-change counts)</td><td>All 18 specified quantities, as 22 columns with scenario/filter/setting/antigens &middot; <a href="#s02">&sect;02</a></td><td><span class="chip pass">answered</span></td><td>Every numeric cell recomputes independently</td></tr>
+        <tr><td class="num">13</td><td>Step 12 &mdash; &ldquo;benchmark-antigen identifier table&rdquo; as a named output</td><td>Folded into Table B: <code>antigen</code>, <code>gene_id</code>, <code>gene_name_in_app</code>, <code>n_peptides</code> &middot; <a href="#s03">&sect;03</a></td><td><span class="chip pass">answered</span></td><td>Not a separate file; the four identifier columns lead Table B instead</td></tr>
+        <tr><td class="num">14</td><td>Step 14 &mdash; &ldquo;report the relevant <b>percentage of peptides passing</b> rather than only a binary PASS/FAIL&rdquo;, to distinguish &ldquo;94% of peptides pass a 95% requirement&rdquo; from &ldquo;only 20% pass&rdquo;</td><td><code>*_true_pct_peptides_passing</code> for all three peptide-extrapolated filters, alongside <code>*_gene_rule_pct_tolerated</code> &middot; <a href="#s03">&sect;03</a></td><td><span class="chip pass">answered</span></td><td>All three peptide-extrapolated filters. Conservation, % of peptides passing: AMA1 27.4, TRAP 22.8, CelTOS 50.0, MSP1 54.7, LSA3 69.7, EBA175 72.0, CSP 74.4, RH5 80.8, against a 95% requirement</td></tr>
+        <tr><td class="num">15</td><td>Step 14 &mdash; &ldquo;final M253 status&rdquo; and &ldquo;final APP status&rdquo; per antigen</td><td><code>M253_status</code>, <code>APP_status</code> &middot; <a href="#s03">&sect;03</a></td><td><span class="chip pass">answered</span></td><td>&ldquo;excluded&rdquo; in all 16 cells</td></tr>
+        <tr><td class="num">16</td><td>Steps 8, 9 and 15 &mdash; &ldquo;The analysis therefore requires <b>12 unique runs</b>&rdquo; / &ldquo;should have <b>12 rows</b>&rdquo;</td><td>15 runs &middot; <a href="#s01">&sect;01</a></td><td><span class="chip fail">answered differently</span></td><td>12 + 3 identity-only rows. The count difference is entirely the human filter: see departure 1</td></tr>
+        <tr><td class="num">17</td><td>Step 17 / Step 20 &mdash; an 8 &times; 12 retained/excluded matrix, &ldquo;particularly well as a simple supplementary heatmap&rdquo;, to show whether an antigen &ldquo;re-enters the catalogue under a modest relaxation&rdquo;</td><td>Replaced by the distance-to-threshold figure. Matrix still shipped as <code>antigen_retention_matrix.csv</code> (8 &times; 15) &middot; <a href="#s03">&sect;03</a></td><td><span class="chip fail">answered differently</span></td><td>Every cell is &ldquo;excluded&rdquo;, so the heatmap is one flat block. The figure answers the same question: how far from selectable is each antigen</td></tr>
+        <tr><td class="num">18</td><td>Step 19 &mdash; reproducibility outputs: a frozen config per run, gene- and peptide-level output per run, the identifier table, both supplementary tables, the retention matrix, and the scripts</td><td>15 configs, 45 run files, both tables, the matrix, the analysis/verification/rendering scripts, <code>provenance.txt</code>, <code>COLUMN-DEFINITIONS.md</code>, and the source of this report &middot; <a href="#s06">&sect;06</a></td><td><span class="chip pass">answered</span></td><td>All 15 configs replay from disk to their table rows</td></tr>
+        <tr><td class="num">19</td><td>Step 19 / Step 2 &mdash; &ldquo;The scenario definitions should be frozen before the filtering outputs are inspected&rdquo;</td><td>Scenarios were frozen, run, and then four were replaced after inspection &middot; <a href="#s01">&sect;01</a></td><td><span class="chip fail">answered differently</span></td><td>Contradicted by the instruction to check the scenarios empirically &mdash; see departure 3</td></tr>
+        <tr><td class="num">20</td><td>Step 20 &mdash; a short Results summary with five named components</td><td>Proposed passage at the end of this section &middot; <a href="#s04">&sect;04</a></td><td><span class="chip pass">answered</span></td><td>Drafted here for the first time, all five components covered, clearly marked as proposed text</td></tr>
+        <tr><td class="num">21</td><td>Step 6 &mdash; &ldquo;The 5-CPM threshold is a <b>prespecified sensitivity-analysis value</b>, not a biologically validated boundary &hellip; It should be described as such&rdquo;</td><td>Stated in <a href="#s02">&sect;02</a> alongside the expression scenarios</td><td><span class="chip pass">answered</span></td><td>Stated explicitly wherever the 5&nbsp;CPM value is used</td></tr>
+        <tr><td class="num">22</td><td>Step 18 &mdash; recovery of an antigen &ldquo;provides a useful face-validity benchmark &hellip; but does not demonstrate that its retained peptides are immunogenic or protective&rdquo;; an antigen &ldquo;may fail because it is highly polymorphic, despite having demonstrated biological or immunological relevance&rdquo;</td><td><a href="#s03">&sect;03</a></td><td><span class="chip pass">answered</span></td><td>Both sentences now carried explicitly; the second is the substance of the result</td></tr>
+        <tr><td class="num">23</td><td>The invitation to &ldquo;modify the plan or suggest changes&rdquo;</td><td>Four departures, below, each with the evidence that forced it &middot; <a href="#s01">&sect;01</a></td><td><span class="chip pass">answered</span></td><td>Three of the four were forced by the empirical check the plan asked for</td></tr>
       </tbody>
     </table>
   </div>
@@ -185,247 +203,15 @@ footer{border-top:1px solid var(--rule);padding-top:22px;font-size:.82rem;color:
 
     <p>The delivered analysis does both prohibited things, because the scenarios as specified measure nothing. With everything else held at M253, the identity threshold returns <b>exactly 253 genes at &le;60%, &le;70%, &le;80%, &le;90% and &le;100%</b>: the &le;15&nbsp;aa alignment-length criterion binds across that whole range, so identity never gets to act. Varying length instead gives 183 / 253 / 376 genes at &le;12 / &le;15 / &le;18&nbsp;aa.</p>
 
-    <p>On why &plusmn;3&nbsp;aa, which the plan specified for identity but not for length: it is the smallest symmetric step that moves the catalogue materially in both directions (&minus;28% and +49%) while leaving the criterion recognisable. At &le;20&nbsp;aa, the top of the slider, the filter excludes nothing; at &plusmn;1&nbsp;aa too few genes move to separate a real dependence from granularity in the alignment lengths. Like the plan&rsquo;s own &plusmn;10 points on identity, it is a defensible span rather than a validated boundary. Switching the length filter off, which the app allows, makes identity informative again: 506 / 558 / 587 genes at &le;70% / &le;80% / &le;90%. Separating the arms meets Step 3&rsquo;s attribution concern by construction, since each row moves one component. Largest departure here, and the first to raise with Jacob.</p>
+    <p>On why &plusmn;3&nbsp;aa, which the plan specified for identity but not for length: it is the smallest symmetric step that moves the catalogue materially in both directions (&minus;28% and +49%) while leaving the criterion recognisable. At &le;20&nbsp;aa, the top of the slider, the filter excludes nothing; at &plusmn;1&nbsp;aa too few genes move to separate a real dependence from granularity in the alignment lengths. Like the plan&rsquo;s own &plusmn;10 points on identity, it is a defensible span rather than a validated boundary. Switching the length filter off, which the app allows, makes identity informative again: 506 / 558 / 587 genes at &le;70% / &le;80% / &le;90%. Separating the arms meets Step 3&rsquo;s attribution concern by construction, since each row moves one component. The largest departure of the four.</p>
     <p><b>2 &mdash; The indel filter has no stringent arm.</b> All four of its controls were checked. The gene rule already sits at its 100% maximum. The frequency threshold is inert from 0.05 down to 0.00, because every gene at or below 0.05 sits at exactly 0.0 and the next distinct value in the data is 0.057. And restricting <em>which</em> indels are counted <b>relaxes</b> the filter, since the metric is a maximum over a smaller set: &ldquo;Only Insertions&rdquo; gives 280 genes, &ldquo;Only Deletions&rdquo; 260, &ldquo;Only Frameshifts&rdquo; 294, insertions+frameshifts 297, against 253 at baseline. Relaxation-only is a property of the filter at this configuration, and belongs in the Results as a finding.</p>
-    <p><b>3 &mdash; The final fifteen scenarios were not pre-registered.</b> Steps 2 and 19 both require the definitions to be fixed before anyone looks at the outputs. The email asks for the opposite: <em>&ldquo;check the scenario definition and the rationale and more importanly if they make sense empirically (e.g., perhaps one configuration removes all genes which is obviously meaningless)&rdquo;</em>. Vetting requires looking, so both cannot be honoured. What happened: the plan&rsquo;s scenarios were defined, run, and four replaced once their outputs were seen &mdash; three for being inert, one for emptying the catalogue. That is what the email asked for, but it makes the analysis exploratory at that step, and it should not be written up as pre-registered. <code>rejected_scenarios.csv</code> records all five rejected or superseded options with reasons.</p>
+    <p><b>3 &mdash; The scenarios were revised after seeing their output.</b> Steps 2 and 19 ask for the definitions to be fixed before the outputs are inspected, but the plan also asks for the opposite: <em>&ldquo;check the scenario definition and the rationale and more importanly if they make sense empirically (e.g., perhaps one configuration removes all genes which is obviously meaningless)&rdquo;</em>. Checking requires looking. The scenarios were defined, run, and four replaced once their outputs were seen &mdash; three for being inert, one for emptying the catalogue. <code>rejected_scenarios.csv</code> records all five with reasons.</p>
     <p><b>4 &mdash; The conservation-stringent arm moved from a threshold to a gene rule.</b> The plan specified 1.00, which empties the catalogue: only 19 of 4,937 genes reach it, and none survives the other filters. 0.995 works and gives 164 genes, but the app&rsquo;s haplotype-frequency slider steps in units of 0.01, so 0.995 cannot be selected and the next value above 0.99 is 1.00. The arm tightens the gene rule instead &mdash; <code>haplotype_gene_pc = 99</code>, 176 genes, on-grid, and the same control the preprint already moves to get its published 1,517 figure.</p>
   </div>
-
-  <div class="callout">
-    <span class="eyebrow">A defect in a shipped column &mdash; <code>num_peptides</code> is short by one</span>
-    <p style="margin:0">The <code>num_peptides</code> column in the application&rsquo;s own <code>gene-metrics-filtering.csv.gz</code> is <b>exactly one less</b> than the gene&rsquo;s true peptide count for <b>4,423 of 4,937 genes</b>; the difference is &minus;1 or 0 and never anything else. Summed over the whole table it gives 374,902 against 379,325 actual peptide rows, and over the published catalogue <b>9,861 against the correct 10,088</b>.</p>
-    <p style="margin:0">No published figure is affected, because every peptide count in the paper and in these outputs comes from counting peptide rows rather than summing this column, and <code>validate()</code> confirms 10,088 independently. The column is copied verbatim into all 15 per-run gene catalogues in <code>run_outputs/</code>, though, so a reviewer who sums it lands 227 peptides away from the paper. Drop it from those files or recompute it before <code>analysis/</code> is deposited anywhere citable. The defect is in the upstream data file and worth reporting to the app&rsquo;s maintainers separately.</p>
-  </div>
-
-  <h3>Scientific review</h3>
-  <div class="prose">
-    <p>The checks above establish that the code does what it says. What follows asks whether the <em>science</em> holds &mdash; whether the comparisons are fair and the inferences warranted. Eight concerns, with what each one changes.</p>
-  </div>
-
-  <div class="callout">
-    <span class="eyebrow">S1 &middot; Life-stage mismatch in the antigen panel</span>
-    <p style="margin:0">The eight antigens are not all from one parasite stage. CSP, TRAP, CelTOS and LSA3 are pre-erythrocytic; AMA1, MSP1, RH5 and EBA175 are blood-stage. M253 requires <b>liver-stage day-4 expression</b>, and six of the eight fail that filter &mdash; so on the face of it the benchmark asks merozoite antigens to be expressed in liver stage, which is close to a category error.</p>
-    <p style="margin:0">Two things complicate that reading. Failure does not track stage: CSP (pre-erythrocytic) and AMA1 (blood-stage) <em>both pass</em> the day-4 filter, while LSA3, a liver-stage antigen, fails it at &ge;1&nbsp;CPM in only 1 of 3 replicates (11.04, 0, 0). And the headline does not rest on those filters at all. Swapping to the app’s <b>sporozoite</b>-stage filter, the stage-appropriate choice for three of the four pre-erythrocytic antigens, gives 695 genes and <b>still retains none of the eight</b>. Removing expression and orthology <em>entirely</em> gives 1,142 genes and still retains none. <b>All eight fail strain conservation</b>, which is stage-independent and applies to them equally.</p>
-    <p style="margin:0">So the conclusion is robust, but the per-filter exclusion reasons need the caveat. Seven of the eight pass sporozoite expression at &ge;1&nbsp;CPM in all five replicates (EBA175 is the exception, at 2 of 5), so the expression failures are largely a stage artefact. Orthology is similar: RH5 is <i>P. falciparum</i>-restricted with no clear <i>P. vivax</i> orthologue. <b>Conservation is the only filter that <em>all eight</em> fail</b> &mdash; but other stage-independent filters do discriminate. Drop conservation, keep human similarity and indels, and 2,397 genes return, of which only <b>three of the eight re-enter</b> (AMA1, RH5, CelTOS). Human similarity independently excludes CSP; indels exclude TRAP, EBA175, MSP1 and LSA3, MSP1&rsquo;s maximum indel frequency being 0.817 against a 0.05 threshold. Three of the five filters therefore discriminate on stage-independent grounds. The write-up should say that rather than presenting five independent failures.</p>
-  </div>
-
-  <div class="callout">
-    <span class="eyebrow">S2 &middot; Is the benchmark circular?</span>
-    <p style="margin:0">The tool selects for conserved targets, and these eight antigens are famous for antigenic variation &mdash; the paper&rsquo;s own Discussion says so. A benchmark that rejects them therefore risks confirming only that the filter does what it is defined to do. As a pass/fail table, that objection largely stands.</p>
-    <p style="margin:0">Expressing the same data as a <b>percentile rank against every other gene</b> blunts it, because the result becomes graded and falsifiable rather than binary. It does not dissolve the objection — the metric being ranked is still the one the filter selects on — but it does make the answer something that could have come out otherwise. (4,930 genes have a conservation value, 4,933 an identity value and all 4,937 an indel value; the missing ones lack the metric.) On conservation the eight are extreme outliers: AMA1 and CelTOS beat <b>0.0%</b> of the genome, TRAP 0.1%, CSP 0.3%, MSP1 0.8%, EBA175 2.0%, LSA3 12.6%, RH5 17.5%. <b>Five of the eight sit in the bottom 1% of all genes &mdash; AMA1 0.02%, CelTOS 0.04%, TRAP 0.14%, CSP 0.30%, MSP1 0.83% &mdash; with EBA175 sixth at 2.03%.</b> They could have come out mid-pack and did not.</p>
-    <p style="margin:0">The contrast is what makes it informative, and it needs the scales stated, because the three are not comparable. Ties at the best value cap what any gene can score: the conservation percentile reaches <b>99.6%</b>, but human identity tops out at <b>56.7%</b> (2,138 genes tie there) and indel frequency at <b>30.0%</b> (3,457 tie). The eight span 6.9% to 56.7% on identity, six of them at or near that ceiling, and five sit exactly at the indel ceiling of 30.0%, with MSP1 at 1.9% and LSA3 at 7.4%. On identity and indels most of these antigens are about as good as a gene can be; only on conservation are they extreme. The claim is therefore specific &mdash; genomic outliers <em>on conservation in particular</em>, ordinary elsewhere &mdash; which is a real result rather than a restatement of the filter&rsquo;s definition. The columns are in Table B (<code>*_genome_percentile</code>) and they are the number to quote in the Results.</p>
-  </div>
-
-  <div class="callout">
-    <span class="eyebrow">S3 &middot; One filter at a time understates sensitivity by about 2.5&times;</span>
-    <p style="margin:0">The email scoped this deliberately: <em>&ldquo;This is by no means an exhaustive analysis but we are not going to iterate through hundreds of combinations&rdquo;</em>. The design is a decision, and a factorial sweep is not the remedy. But the report should not leave a reader assuming the design explores the space, because it demonstrably cannot.</p>
-    <p style="margin:0">Interactions exist and are measurable. The clearest is already in &sect;03: identity is inert only because the alignment-length criterion binds. Another: tightening conservation to the 99% gene rule costs <b>77 genes</b> at the default human setting but <b>119</b> when the human gene rule is loosened to 50%, so the cost of one filter depends on another. Some pairs do not interact at all &mdash; relaxing orthology and relaxing the indel gene rule add <em>disjoint</em> gene sets and combine exactly additively (328 = 253 + 37 + 38).</p>
-    <p style="margin:0">In aggregate the compounding is large. Relaxing all five filters at once gives <b>2,048 genes</b> against an additive prediction of 958 from the five individual arms, which gain 705 between them — a gain of 1,795 where one-at-a-time predicts 705. That is the combination using the indel <em>gene-rule</em> arm (<code>alignment_length&nbsp;&le;18</code>, <code>strain_conservation&nbsp;&ge;0.95</code>, <code>indel_gene_pc&nbsp;=&nbsp;95</code>, &ge;2 D4 replicates, no orthology); substituting the indel <em>frequency</em> arm (<code>&le;0.10</code>) gives <b>1,565 genes</b> against a prediction of 927. Both are exploratory cross-checks run outside Table A and recorded in <code>analysis/output/interaction_checks.txt</code>. This is what conjunctive filters do &mdash; relaxing one admits only genes already passing the other four &mdash; and it means the single-filter table bounds the catalogue&rsquo;s sensitivity from below rather than estimating it. <b>One option:</b> an extra row for the all-relaxed configuration would bound the space for the cost of one run. Beyond what was asked for, so Jacob&rsquo;s call.</p>
-  </div>
-
-  <div class="callout">
-    <span class="eyebrow">S4 &middot; Conservation is measured in African isolates only</span>
-    <p style="margin:0">Strain conservation comes from haplotype frequencies in <b>8,492 African isolates</b>, a subset of Pf7&rsquo;s 16,203 genomes. The paper states the scope in Methods, in Table 1 and in the Results, and the plan&rsquo;s Step 4 confirms that the 1.00 setting &ldquo;requires the selected haplotype to be observed in all callable <b>African</b> samples&rdquo;. What neither the paper nor this report does is flag it as a <em>limitation</em>.</p>
-    <p style="margin:0">It is one. Conservation measured in one continental population says nothing about conservation elsewhere, so a catalogue built on African frequencies inherits that scope and should be described as an African-frequency catalogue. This is a limitation of the <em>data</em>; it is not a claim about any antigen&rsquo;s geographic allele-frequency structure, which would need a citation this analysis does not supply. For a vaccine-target shortlist it is material and belongs in the Discussion in one sentence.</p>
-    <p style="margin:0">The sensitivity analysis cannot address it. The application ships a single African-derived conservation metric, so there is no second geography to vary, and no setting of any filter can test geographic robustness with these data.</p>
-  </div>
-
-  <div class="callout">
-    <span class="eyebrow">S5 &middot; The 0.99 threshold cannot be checked against sampling error</span>
-    <p style="margin:0">Each peptide&rsquo;s haplotype frequency is an estimate from a finite sample, so a hard cut at 0.99 will move genes for statistical as well as biological reasons. Whether that matters cannot be assessed from the shipped data: <b>neither the gene nor the peptide table carries a coverage or callable-sample count</b>, so there is no denominator. Nor are the frequencies integer multiples of 1/8,492 &mdash; only 14% are consistent with that, and the observed granularity is ~1.4&times;10&#8315;&#8312; &mdash; so the per-peptide sample size cannot be recovered and no binomial interval can be constructed. That limit belongs in the write-up rather than being glossed.</p>
-    <p style="margin:0">What can be measured is how fragile the catalogue is to the threshold itself. Of the 253 retained genes, <b>18 have a 5th-percentile haplotype frequency inside [0.990, 0.991)</b>, within 0.001 of the cut; 33 fall within 0.002 and 89 within 0.005. The closest sits at 0.99007, seven parts in 100,000 above the line. Genome-wide, 1,218 genes fall in [0.985, 0.995). A sub-1% movement in the threshold therefore reshuffles a material fraction of the catalogue, which is exactly where sampling noise would live. Read it as a caveat on the precision of &ldquo;253&rdquo;.</p>
-  </div>
-
-  <div class="callout">
-    <span class="eyebrow">S6 &middot; &ldquo;Day 2 is unusable&rdquo; is a library-depth artefact</span>
-    <p style="margin:0">The day-2/4/5/6 comparison earlier in this report is correct as counts, but the inference drawn from it was wrong. There is no library-size column; the totals are diagnostic anyway. Summed CPM per replicate: <b>day 2 &mdash; 679,169 / 433,162 / 15,682</b>; day 4 &mdash; 755,198 / 1,012,068 / 537,141; day 5 &mdash; 913,866 / 1,019,839 / 974,892; day 6 &mdash; 834,453 / 801,665 / 949,551; sporozoite &mdash; 1.8 to 5.9 million.</p>
-    <p style="margin:0">CPM summed over a transcriptome should be 10&#8310;. It is, at days 5 and 6. It is not at day 2, and one day-2 replicate totals <b>15,682 &mdash; 1.6% of a day-5 replicate</b>. These are parasite CPM within libraries dominated by host hepatocyte reads, so at day 2 there is almost no parasite material to measure: 3,367 of 4,937 genes are zero in all three day-2 replicates, against 46 at day 5 and 8 at day 6. Since the rule requires all three replicates, the day-2 figure of 36 genes is effectively set by that one near-empty replicate.</p>
-    <p style="margin:0">That still supports day 4, though for a different reason than the one given: day 2 cannot support a replicate-based expression filter <em>in these libraries</em>, which is a property of parasite biomass in the source experiment. It also means <b>&ldquo;&ge;1 CPM&rdquo; is not a constant stringency across stages</b> &mdash; the totals differ by up to ~380&times; &mdash; so cross-stage readings of the expression filter, and the &ge;5&nbsp;CPM stringent arm, are depth-relative. M253 uses day 4 alone, so the published result is internally consistent; the caveat applies to the cross-stage comparison.</p>
-  </div>
-
-  <div class="callout note">
-    <span class="eyebrow">S7 &middot; Statistics and reporting</span>
-    <p style="margin:0">No inferential statistics are used anywhere, which is correct for a descriptive sensitivity analysis. Checked: nothing in the report claims anything that would need a test, a p-value or a confidence interval.</p>
-    <p style="margin:0">Every scenario is nested with respect to M253 by construction, verified by set inclusion at gene and peptide level for all 15. Containment is more interpretable than Jaccard for nested sets, and Table A reports both (<code>M253_genes_pct_retained</code>, <code>APP_genes_pct_retained</code>). <b>The trap:</b> M253&rsquo;s Jaccard against APP is 0.222, which invites the reading that the two catalogues disagree. They do not &mdash; M253 is a <em>perfect subset</em> of APP and 100% of its genes are retained there. The 0.222 is entirely the 889-gene size difference. Read containment whenever the sets are nested and differently sized.</p>
-    <p style="margin:0">The replacement scenarios were chosen after seeing the originals fail, which is legitimate exploratory work. It is disclosed in <code>rejected_scenarios.csv</code> and in departure 3 above, and the final fifteen are nowhere presented as prespecified.</p>
-  </div>
-
-  <div class="callout note">
-    <span class="eyebrow">S8 &middot; Two peptide definitions</span>
-    <p style="margin:0">Three numbers exist for the same runs and all three are legitimate: 10,088 peptides <em>belonging to</em> the 253 retained genes; 84,859 for the independently filtered peptide set at the same configuration; and 326,701 for <em>both</em> conservation-only rows, because peptide-level filtering strips the percentile suffix and so cannot see the gene rule at all. Table A&rsquo;s <code>peptides</code> column uses the belonging definition throughout, <code>run_outputs/</code> ships both per run, and <code>validate()</code> gates 84,556 and 42,208 on the belonging definition, which is what the paper reports. The recommendation is simple: state the definition once in Methods and use it everywhere.</p>
-  </div>
-
-  <h3>Proposed Results summary (Step 20)</h3>
-  <div class="prose">
-    <p>Step 20 asks for &ldquo;a short summary&rdquo; covering five named components. This is a <b>proposed passage for the Results</b> &mdash; it is not in the manuscript and no manuscript file has been edited. Every figure comes from the outputs in <code>analysis/output/</code>.</p>
-  </div>
-  <div class="draft">
-    To assess how sensitive the illustrative catalogue is to the chosen thresholds, we varied each of the five filters in turn while holding the other four at the published configuration. <span class="fix">This gave thirteen single-filter variants, which together with the two reference configurations make fifteen runs in total (Supplementary Table A). Four of the five filters were varied in both directions; the indel filter admits relaxation only, because the published configuration already requires every peptide in a gene to pass and the frequency threshold is inert at every value below 5%.</span> Candidate-set size ranged from 176 to 1,142 genes against a baseline of 253. <span class="fix">Composition was nested in the direction each variant moves: every relaxation retained all 253 published genes, and each of the three configurations that tightened a criterion was a strict subset of them.</span> The catalogue was most sensitive to the expression and conservation criteria &mdash; relaxing the day-4 replicate requirement from three replicates to two more than doubled it to 596 genes (gene-set Jaccard 0.42 against the published catalogue), and lowering the haplotype-frequency threshold from 0.99 to 0.95 added 164 genes &mdash; and least sensitive to the indel frequency threshold, which added 7 genes (Jaccard 0.97) across its full usable range. The published catalogue is a strict subset of the one produced by the application&rsquo;s default settings: all 253 genes are retained among the 1,142 obtained with the two optional filters inactive, the difference being entirely the addition of the liver-stage expression and <i>P. vivax</i> orthology requirements.
-
-    None of the eight benchmark vaccine antigens was retained under the published configuration, nor under any of the fifteen runs examined (Supplementary Table B). Strain conservation was the criterion responsible in every case: all eight fell below the requirement that a gene&rsquo;s 5th-percentile peptide haplotype frequency reach 0.99 &mdash; the percentile form of the application&rsquo;s &ldquo;95% of peptides&rdquo; gene rule &mdash; with the proportion of qualifying peptides ranging from 22.8% (TRAP) to 80.8% (RH5), and five of the eight ranking within the bottom 1% of all genes on this metric. <span class="fix">Conservation was not, however, the only criterion to exclude these antigens on grounds independent of life stage: applying the human-similarity and indel filters alone returns 2,397 genes and restores only three of the eight, with circumsporozoite protein excluded by human similarity and TRAP, EBA175, MSP1 and LSA3 by indel frequency.</span> <span class="fix">Six of the eight did not meet the liver-stage day-4 expression requirement, which for the four blood-stage antigens in the panel reflects the life stage assayed rather than a property of the gene; seven of the eight are expressed in sporozoites, and substituting the sporozoite-stage criterion returned 695 genes without restoring any antigen to the catalogue.</span>
-
-    These results indicate that the catalogue&rsquo;s size is materially dependent on the expression and conservation thresholds while its composition is stable under relaxation, and that established vaccine antigens are excluded by this workflow principally because <span class="fix">they are among the most polymorphic genes in the 8,492 African isolates from which the conservation metric is derived</span> &mdash; a consequence of the conservation-first design rather than an assessment of their merit as vaccine targets. <span class="fix">Because conservation is estimated from African genomes only, the catalogue should be understood as conserved with respect to that population rather than globally.</span>
-  </div>
-  <p class="note-under">That covers all five of Step 20&rsquo;s components in order: degree of change in counts and composition; which filters produced the greatest sensitivity; similarity between the M253 and application-default catalogues; which benchmark antigens were retained under M253 (none, stated directly); and which filters excluded the rest. The stage caveat from S1, the percentile ranks from S2 and the African-only scope from S4 are folded in, since each changes what the passage is entitled to claim &mdash; it no longer blames the non-conservation failures on life stage alone, four indel failures and one human-similarity failure being stage-independent, and it no longer calls the identity-only rows tightenings, since they gain genes.</p>
 </section>
 
-<!-- 1 -->
-<section>
-  <div class="shead"><span class="snum">01</span><h2>How the numbers were produced</h2></div>
-  <div class="prose">
-    <p>Everything below is a run of the published app's own filtering engine — <code>filter_datasets()</code> in <code>pep/filter.py</code> — against the repository's own <code>config/filters.json</code> and <code>data/*.csv.gz</code>. No filter condition has been reimplemented anywhere in the analysis.</p>
-    <p>The app collects widget values into <code>st.session_state</code> and hands them to that one function, which touches Streamlit in exactly two lines (both plain reads of the settings). Substituting a dictionary for those reads lets the same code be driven from a script, which is what makes the 269 configurations this analysis runs feasible where clicking sliders is not. (Counted by instrumenting <code>run()</code>, not estimated: 24 in <code>run_sensitivity.py</code> &mdash; four validation runs, fifteen scenarios, five rejected &mdash; and 245 in <code>run_antigens.py</code>, most of them threshold and gene-rule sweeps.)</p>
-  </div>
-
-  <h3>Provenance checks against the live repository</h3>
-  <p class="note-under" style="margin-bottom:-4px">Checked against <code>github.com/malariagen/pf-peptidefilter</code> fetched 4 September 2026 — <code>prod</code> at <code>5861f79</code>, <code>main</code> at <code>3a9af72</code> — not against a cached copy. Every app file in the working tree used for the analysis is byte-identical to live <code>main</code>.</p>
-  <div class="tablebox">
-    <table>
-      <thead><tr><th>Component</th><th>Live <code>prod</code> (5861f79)</th><th>What was run</th></tr></thead>
-      <tbody>
-        <tr><td class="name">gene-metrics-filtering.csv.gz</td><td class="mono">md5 fdee05f9…</td><td><span class="chip ok">identical</span></td></tr>
-        <tr><td class="name">peptide-metrics-filtering.csv.gz</td><td class="mono">md5 3380de0f…</td><td><span class="chip ok">identical</span></td></tr>
-        <tr><td class="name">go-data-core.csv</td><td class="mono">md5 compared</td><td><span class="chip ok">identical</span></td></tr>
-        <tr><td class="name">config/filters.json</td><td class="mono">byte-for-byte</td><td><span class="chip ok">identical</span></td></tr>
-        <tr><td class="name">UI defaults (all thresholds)</td><td class="mono">UI_CONFIG</td><td><span class="chip ok">identical</span></td></tr>
-        <tr><td class="name">Filtering logic</td><td class="mono">peptidefilter/filter.py</td><td>differs only in import order and one summary column renamed <code>proportion</code> → <code>fraction</code>; no difference in filtering behaviour</td></tr>
-        <tr><td class="name">Environment</td><td class="mono">pandas 1.5.1</td><td><span class="chip ok">pinned to match</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <h3>Reproduction of published figures</h3>
-  <div class="tablebox">
-    <table>
-      <thead><tr><th>Result in the preprint</th><th class="num">Published</th><th class="num">Reproduced</th><th></th></tr></thead>
-      <tbody>
-        <tr><td>Conservation alone, 95% of peptides at ≥99%</td><td class="num">2,107 genes</td><td class="num">2,107</td><td><span class="chip ok">match</span></td></tr>
-        <tr><td>Conservation at 99% of peptides</td><td class="num">1,517 genes</td><td class="num">1,517</td><td><span class="chip ok">match</span></td></tr>
-        <tr><td>Conservation + human identity</td><td class="num">1,274 genes</td><td class="num">1,274</td><td><span class="chip ok">match</span></td></tr>
-        <tr><td>All five filters (the illustrative catalogue)</td><td class="num">253 / 10,088</td><td class="num">253 / 10,088</td><td><span class="chip ok">match</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="note-under">These four are run as an assertion at the start of every analysis script (<code>pepfilter_headless.validate()</code>); the analysis aborts if any of them drifts.</p>
-</section>
-
-<!-- 2 -->
-<section>
-  <div class="shead"><span class="snum">02</span><h2>Corrections to the new methods paragraph</h2></div>
-  <div class="prose">
-    <p>The preprint’s <em>default-thresholds</em> sentence reproduces the result correctly. It describes the catalogue as <em>"default thresholds (human identity &le; 80%, strain conservation &ge; 99%, indel frequency &lt; 5<mark style="background:var(--reject-soft);color:var(--reject)">.</mark> homology with <i>P. vivax</i>, gene expression in day 4 of liver stage infection)"</i></em> — and it reproduces 253 genes and 10,088 peptides exactly. Two details in that sentence and its neighbour still need correcting, though neither changes a number: the operator is <code>&le;</code> rather than <code>&lt;</code>, and the preceding sentence names both <i>P. vivax</i> and <i>P. berghei</i> where the run used <i>P. vivax</i> alone. Both are in the “two smaller mismatches” callout below.</p>
-    <p>But the two sentences immediately before it, describing how the 2,107 and 1,274 figures were obtained, do <b>not</b> match the configuration that produces them, and unlike the methods paragraph they are already in print. Every <em>count</em> in the preprint reproduces; it is the prose describing how the counts were reached that is wrong.</p>
-    <p>The expanded paragraph drafted for the revision spells those settings out in more detail. Three of its clauses do not describe what the code does. The first is a wrong number; the other two describe the gene-level rule in a way the implementation does not support.</p>
-  </div>
-
-  <h3>1 — the indel gene rule was 100%, not 95%</h3>
-  <blockquote class="wrong">"For indel filtering, <span class="hl">at least 95% of peptides</span> within each gene were required to pass the ≤5% frequency threshold, considering indels of any type or predicted effect."</blockquote>
-
-  <div class="callout">
-    <span class="eyebrow">What it actually was</span>
-    <p style="margin:0">The indel gene rule was left at the application default of <b>100% of peptides</b>. At 95% the catalogue is <b>291 genes / 13,772 peptides</b>, not 253 / 10,088. The other two figures in that paragraph — 75% for human identity, 95% for conservation — are correct.</p>
-  </div>
-
-  <h3>2 — "applied jointly" describes something the app does not do</h3>
-  <blockquote class="wrong">"For human identity filtering, <span class="hl">at least 75% of peptides within each gene were required to pass, with the identity and alignment-length criteria applied jointly</span> and a maximum alignment length of 15 amino acids."</blockquote>
-
-  <div class="callout">
-    <span class="eyebrow">What it actually was</span>
-    <p style="margin:0">Two <em>separate</em> percentile columns are tested and combined with <code>AND</code>: <code>blt_pident_p75 &le; 80</code> and <code>blt_length_p75 &le; 15</code>. Each is the 75th percentile of that one metric across the gene's peptides, computed independently of the other. The app never asks whether the <em>same</em> 75% of peptides satisfies both conditions.</p>
-    <p style="margin:0">The distinction changes the catalogue. <b>10 of the 253 retained genes</b> have fewer than 75% of their peptides satisfying both conditions at once, so a filter written the way the paragraph describes would drop them — <code>PF3D7_1203200</code> (70.0% of peptides pass both), <code>PF3D7_0721100</code> (70.8%), <code>PF3D7_0628500</code> (71.0%), <code>PF3D7_0722700</code> (71.4%), <code>PF3D7_1237700</code> (71.4%), <code>PF3D7_1404400</code> (72.2%), <code>PF3D7_0512000</code> (72.7%), <code>PF3D7_1308100</code> (73.3%), <code>PF3D7_1015100</code> (74.4%), <code>PF3D7_1343400</code> (74.5%). Across all 4,937 genes the identity-passing and length-passing peptide subsets differ for <b>4,846</b> of them. (4,840 is the count whose passing <em>fractions</em> differ; a further 6 genes pass equal numbers of peptides on each criterion but not the same ones — exactly the case the word “jointly” would have to cover.)</p>
-    <p style="margin:0">Separately: the <code>human_id_joint_rule</code> setting itself has <b>no effect on any result</b>. Applying two column tests in one nested group or in two sequential steps is the same set intersection, and a run of both options returns byte-identical gene sets (253 under M253, 1,142 under application defaults). The radio button changes only how the app groups the two tests in its own step summary — one row rather than two.</p>
-  </div>
-
-  <h3>3 — the conservation clause has the same problem</h3>
-  <blockquote class="wrong">"For strain conservation, <span class="hl">at least 95% of peptides within each gene were required to meet the &ge;99% frequency threshold</span>, using the dominant amino-acid haplotype irrespective of whether it matched the 3D7 reference."</blockquote>
-
-  <div class="callout">
-    <span class="eyebrow">What it actually was</span>
-    <p style="margin:0">The code tests <code>hap_top_hap_freq_p05 &ge; 0.99</code>. The suffix is <code>_p{100 &minus; haplotype_gene_pc}</code>, an inversion the human and indel filters do not have — and the direction is right: requiring the 5th percentile to clear 0.99 is the percentile form of "95% of peptides must pass". But it is a percentile, interpolated linearly between the two peptides that straddle it, not a count. <b>19 of the 253 retained genes</b> have fewer than 95% of their peptides at &ge;0.99 and are kept anyway; <code>PF3D7_0308800</code> is retained on 90.0% (10 peptides, 9 passing, 5th percentile 0.9914). The effect runs mostly one way but not entirely: genome-wide, <b>99 genes</b> are admitted on fewer than 95% of their peptides, and <b>2</b> are rejected despite meeting the count (<code>PF3D7_0714500</code> and <code>PF3D7_1443800</code>, both sitting at exactly 0.95, where interpolation and counting part company on rounding alone).</p>
-    <p style="margin:0">The indel clause needs no such repair. Its rule is <code>_p100</code>, the maximum, where the percentile and the count agree exactly — "all peptides within each gene" is literally true, on all 4,937 genes.</p>
-    <p style="margin:0">Verified against the four published figures, which still reproduce exactly: only <code>_p05</code> gives 2,107 genes (<code>_p04</code> gives 1,913, <code>_p06</code> gives 2,291), so the inversion is both implemented and used correctly.</p>
-  </div>
-
-  <div class="prose">
-    <p>A last point worth making explicit while we are in there: <b>10,088</b> is the number of peptides <em>belonging to</em> the 253 retained genes, as reported on the app's gene-results page. Pf-PeptideFilter also filters peptides independently, and that count for the same configuration is <b>84,859</b>. Both are legitimate; the paper should say which one it means.</p>
-  </div>
-
-  <h3>Errors already in print</h3>
-  <div class="callout">
-    <span class="eyebrow">The 1,274 sentence — wrong by a factor of eight</span>
-    <blockquote class="wrong" style="margin-bottom:6px">"Applying both the strain conservation and human identity filters simultaneously–i.e. by requiring <span class="hl">95% of peptides per gene</span> to exceed a 99% conservation threshold <span class="hl">and</span> remain below 80% identity to any human exon with a maximum alignment length of 15 amino acids–reduced the number of retained genes to 1,274"</blockquote>
-    <p style="margin:0">The human gene rule is <b>75%</b>, not 95%; the sentence attaches 95% to both filters. Run as described it gives <b>158 genes</b>, not 1,274. And "simultaneously … and" invites the joint-subset reading, which gives <b>92</b>: of the app’s 1,274, only 92 have ≥95% of peptides passing conservation and human identity together. The 1,274 comes from conservation’s 5th-percentile test at ≥0.99 <em>and</em> identity’s 75th-percentile test at ≤80% <em>and</em> length’s 75th-percentile test at ≤15 aa, each evaluated separately — 1,274 / 158 / 92 for the three readings.</p>
-  </div>
-
-  <div class="callout">
-    <span class="eyebrow">The 2,107 sentence — the parenthetical names the wrong threshold</span>
-    <blockquote class="wrong" style="margin-bottom:6px">"… retain only those genes for which at least 95% of peptides exhibited a dominant haplotype (i.e. a haplotype present in <span class="hl">95% of isolates or more</span>), a total of 2,107 genes and 84,556 peptides were retained"</blockquote>
-    <p style="margin:0">It should read <b>99%</b>. The parenthetical conflates the gene rule (95% of peptides) with the frequency threshold (0.99). At a 0.95 threshold the same gene rule returns <b>3,824 genes</b>; 2,107 requires 0.99. The counts themselves are right — 2,107 / <b>84,556</b> and 1,517 / <b>42,208</b> all reproduce exactly, and both peptide figures are now asserted by <code>validate()</code> alongside the other four. Note the independently filtered peptide set is <b>326,701 for both</b> rows, because peptide-level filtering strips the percentile suffix and so cannot see the gene rule at all: further confirmation that every peptide number in the paper is the "belonging to the retained genes" definition.</p>
-  </div>
-
-  <div class="callout">
-    <span class="eyebrow">Two smaller mismatches in the same passage</span>
-    <p style="margin:0"><b>"indel frequency &lt; 5%"</b> — the code tests <code>≤ 0.05</code>. Here it changes nothing: every gene at or below 0.05 sits at exactly 0.0 and the next distinct value is 0.057, so strict and non-strict both give 3,457 genes. Worth aligning anyway, since a reviewer reproducing the work will notice.</p>
-    <p style="margin:0"><b>"cross-species homology (presence of one-to-one orthologs in <i>P. vivax</i>, and <i>P. berghei</i>)"</b> — the published configuration requires <i>P. vivax</i> only. Requiring both gives <b>251 genes</b>, not 253. The very next sentence says "homology with <i>P. vivax</i>", so the two disagree with each other.</p>
-  </div>
-
-  <h3>Redrafted paragraph</h3>
-  <div class="draft">
-    As an illustrative analysis, we applied the application's default thresholds for human identity (≤80%), strain conservation (≥99%) and indel frequency (≤5%), together with two filters that are not active by default: liver-stage expression and cross-species homology. All remaining settings were left at their defaults. <span class="fix">For human identity filtering, genes were retained where the 75th percentile of peptide identity was ≤80% and the 75th percentile of peptide alignment length was ≤15 amino acids, each percentile evaluated separately across the gene’s peptides; the two criteria therefore apply to the same gene but need not be met by the same subset of its peptides.</span> <span class="fix">For strain conservation, genes were retained where the 5th percentile of peptide haplotype frequency was ≥99% — the percentile form of the application’s “at least 95% of peptides” gene rule — using the dominant amino-acid haplotype irrespective of whether it matched the 3D7 reference.</span> For indel filtering, <span class="fix">all peptides within each gene (100%)</span> were required to pass the ≤5% frequency threshold, considering indels of any type or predicted effect. For the expression filter, genes were required to have expression of ≥1 CPM in all three biological replicates at liver-stage day 4. Day 4 was selected as a representative intermediate liver-stage time point because it provides substantially greater parasite transcript coverage than day 2, while preceding the late liver-stage transcription observed at days 5 and 6 <span class="todo">[ref still needed]</span>.<span class="fix"> [This is now supported by the application’s own expression table, which is worth citing alongside any external reference — see the note below.]</span> For the homology filter, we required the presence of a <i>P. vivax</i> orthologue, as <i>P. vivax</i> is a major human malaria parasite and therefore provides a biologically relevant cross-species comparator, while also illustrating the functionality of the homology filter. Under this configuration, <span class="fix">253 genes were retained, collectively containing 10,088 peptides. Because Pf-PeptideFilter applies gene-level and peptide-level filtering independently, we report here the total number of peptides belonging to the retained genes.</span> This represents a shortlist of potential vaccine targets for downstream experimental validation rather than a uniquely optimal candidate set.
-  </div>
-
-  <div class="callout note">
-    <span class="eyebrow">The Day-4 claim is supported by the app’s own data</span>
-    <p style="margin:0">The <code>[ref still needed]</code> marker is still a blocker for an external citation, but the claim is no longer resting on one. Counting genes at ≥1 CPM in all three replicates in <code>data/gene-metrics-filtering.csv.gz</code>:</p>
-    <div class="tablebox" style="margin:4px 0">
-      <table>
-        <thead><tr><th>Liver stage</th><th class="num">Genes ≥1 CPM in all 3 replicates</th><th class="num">Genes ≥1 CPM in ≥1 replicate</th><th class="num">Median CPM</th></tr></thead>
-        <tbody>
-          <tr><td class="name">Day 2</td><td class="num">36</td><td class="num">1,486</td><td class="num">0.00</td></tr>
-          <tr class="ref"><td class="name">Day 4</td><td class="num">1,583</td><td class="num">4,364</td><td class="num">22.09</td></tr>
-          <tr><td class="name">Day 5</td><td class="num">4,375</td><td class="num">4,766</td><td class="num">64.77</td></tr>
-          <tr><td class="name">Day 6</td><td class="num">4,657</td><td class="num">4,793</td><td class="num">67.45</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="margin:0">Day 2 is unusable at this rule — 36 genes of 4,937, median CPM 0.00 — while days 5 and 6 are close to saturation (4,375 and 4,657, i.e. 89% and 94% of all genes), at which point the filter stops discriminating. Day 4 at 1,583 genes is the only one of the four that is both well-powered and selective, which is precisely the "representative intermediate" argument, from the data the app ships. Cite the table; add the external reference when Jacob supplies it.</p>
-  </div>
-
-  <h3>Completeness check on the redraft</h3>
-  <p class="note-under" style="margin-bottom:2px">All 17 settings in the frozen configuration
-  (<code>analysis/output/configs/config_M253.json</code>) are accounted for: 16 are stated in the
-  paragraph above, and the 17th — <code>human_id_joint_rule</code> — is deliberately not, because
-  it does not change the output. Nothing else is left implicit. Checked setting by setting against
-  the JSON.</p>
-  <div class="tablebox">
-    <table>
-      <thead><tr><th>Setting</th><th class="mono">Value</th><th>Where the paragraph states it</th></tr></thead>
-      <tbody>
-        <tr><td class="name">human_id_gene_rule</td><td class="mono">min % of peptides</td><td>"the 75th percentile of peptide identity … and the 75th percentile of peptide alignment length"</td></tr>
-        <tr><td class="name">human_id_gene_pc</td><td class="mono">75</td><td>"the 75th percentile" — same clause</td></tr>
-        <tr><td class="name">human_id_joint_rule</td><td class="mono">Joint</td><td><b>not stated, by design</b> — the setting has no effect on the gene or peptide set (verified: both options return the identical 253 genes). It changes only the app’s step summary, so stating it in Methods would imply a constraint that is not applied.</td></tr>
-        <tr><td class="name">identity_percent</td><td class="mono">80</td><td>"human identity (≤80%)"</td></tr>
-        <tr><td class="name">alignment_length</td><td class="mono">15</td><td>"maximum alignment length of 15 amino acids"</td></tr>
-        <tr><td class="name">haplotype_gene_rule</td><td class="mono">min % of peptides</td><td>"the 5th percentile of peptide haplotype frequency … the percentile form of the application’s ‘at least 95% of peptides’ gene rule"</td></tr>
-        <tr><td class="name">haplotype_gene_pc</td><td class="mono">95</td><td>"at least 95% of peptides" — same clause, via the <code>100−pc</code> inversion</td></tr>
-        <tr><td class="name">haplotype_type</td><td class="mono">Any haplotype</td><td>"irrespective of whether it matched the 3D7 reference"</td></tr>
-        <tr><td class="name">strain_conservation</td><td class="mono">0.99</td><td>"the 5th percentile … was ≥99%"</td></tr>
-        <tr><td class="name">indel_frequency</td><td class="mono">0.05</td><td>"the ≤5% frequency threshold"</td></tr>
-        <tr><td class="name">indel_gene_pc</td><td class="mono">100</td><td>"all peptides within each gene (100%)" — the corrected clause</td></tr>
-        <tr><td class="name">indel_type</td><td class="mono">Any</td><td>"indels of any type"</td></tr>
-        <tr><td class="name">indel_frameshfits</td><td class="mono">Any</td><td>"or predicted effect"</td></tr>
-        <tr><td class="name">expression_rule</td><td class="mono">All replicates</td><td>"in all three biological replicates"</td></tr>
-        <tr><td class="name">cpm_cutoff</td><td class="mono">1</td><td>"expression of ≥1 CPM"</td></tr>
-        <tr><td class="name">expression_stage</td><td class="mono">Liver Stage Day 4</td><td>"at liver-stage day 4"</td></tr>
-        <tr><td class="name">homology_species</td><td class="mono">P. vivax</td><td>"the presence of a <i>P. vivax</i> orthologue"</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<!-- 3 -->
-<section>
-  <div class="shead"><span class="snum">03</span><h2>R2.3 — Threshold sensitivity</h2></div>
+<section id="s02">
+  <div class="shead"><span class="snum">02</span><h2>R2.3 — Threshold sensitivity</h2></div>
   <div class="prose">
     <p>One <em>filter</em> is varied at a time; every other filter stays at the published configuration. That is not always one <em>setting</em>: the three identity-only rows change the human filter’s combination mode as well as its threshold (<code>human_id_joint_rule</code> → “deactivate length filter”, plus <code>identity_percent</code> for the ≤90% and ≤70% rows; the ≤80% row changes the mode alone). It is unavoidable, since identity is inert while the length criterion is active, and it is the point of those rows. Peptide counts are peptides belonging to the retained genes, on the paper’s definition. Jaccard is on gene sets &mdash; overlap divided by union, so 1.0 means identical catalogues and 0 no shared gene. It falls when two catalogues differ greatly in <em>size</em> even where one wholly contains the other, so for the nested comparisons here the &ldquo;% retained&rdquo; columns are more informative.</p>
   </div>
@@ -457,8 +243,8 @@ footer{border-top:1px solid var(--rule);padding-top:22px;font-size:.82rem;color:
       </tbody>
     </table>
   </div>
-  <p class="note-under">† The 5-CPM value is a <b>prespecified sensitivity-analysis setting, not a biologically validated boundary</b> between expressed and non-expressed genes, and should be described that way wherever it appears (plan Step 6). CPM here is parasite-relative within libraries dominated by host reads, so its stringency is not constant across stages — see S6 in §A.</p>
-  <p class="note-under">Consistency holds throughout, checked by set containment: M253 ⊆ every relaxed catalogue, and every tightened catalogue ⊆ M253, at gene and peptide level across all 15 runs. One label needs care — <span class="mono">HUMAN-IDONLY-STRINGENT</span> is named for its identity threshold (≤70%, the most stringent of that arm) but is a <em>relaxation</em> overall, because switching the length filter off removes a constraint; it gains 253 genes, loses none, and is a superset. No benchmark antigen is retained under any scenario, so that column is omitted here — see §04. Full overlap statistics against both reference catalogues are in <code>supplementary_table_A_sensitivity.csv</code>.</p>
+  <p class="note-under">† The 5-CPM value is a <b>prespecified sensitivity-analysis setting, not a biologically validated boundary</b> between expressed and non-expressed genes, and should be described that way wherever it appears (plan Step 6). CPM here is parasite-relative within libraries dominated by host reads, so its stringency is not constant across stages — see S6 in §05.</p>
+  <p class="note-under">Consistency holds throughout, checked by set containment: M253 ⊆ every relaxed catalogue, and every tightened catalogue ⊆ M253, at gene and peptide level across all 15 runs. One label needs care — <span class="mono">HUMAN-IDONLY-STRINGENT</span> is named for its identity threshold (≤70%, the most stringent of that arm) but is a <em>relaxation</em> overall, because switching the length filter off removes a constraint; it gains 253 genes, loses none, and is a superset. No benchmark antigen is retained under any scenario, so that column is omitted here — see <a href="#s03">&sect;03</a>. Full overlap statistics against both reference catalogues are in <code>supplementary_table_A_sensitivity.csv</code>.</p>
 
   <div class="prose">
     <h3>What this says</h3>
@@ -509,11 +295,11 @@ footer{border-top:1px solid var(--rule);padding-top:22px;font-size:.82rem;color:
 </section>
 
 <!-- 4 -->
-<section>
-  <div class="shead"><span class="snum">04</span><h2>R2.1 — The vaccine-antigen benchmark</h2></div>
+<section id="s03">
+  <div class="shead"><span class="snum">03</span><h2>R2.1 — The vaccine-antigen benchmark</h2></div>
 
   <div class="prose">
-    <p><b>All eight antigens are excluded, under every one of the fifteen configurations.</b> The retained/excluded matrix the plan proposed is therefore a single uniform block, and the "antigens retained" column reads <span class="mono">none retained</span> in every row. Neither is publishable as designed — but the reason behind them is a strong result.</p>
+    <p><b>All eight antigens are excluded, under every one of the fifteen configurations.</b> The retained/excluded matrix the plan proposed is therefore a single uniform block, and the "antigens retained" column reads <span class="mono">none retained</span> in every row. Both are uninformative as designed; the reason they come out that way is the finding.</p>
     <p>The Discussion already makes this argument in words:</p>
   </div>
 
@@ -523,9 +309,9 @@ footer{border-top:1px solid var(--rule);padding-top:22px;font-size:.82rem;color:
     <p>The benchmark supplies the numbers behind that sentence. All eight fail on <b>strain conservation</b>, and AMA1 and MSP1 &mdash; two of the three the paper names &mdash; fail by a wide margin on both measures (27.4% and 54.7% of peptides against a 95% requirement; 0.20 and 0.49 against 0.99). CSP needs stating carefully: it misses badly on the threshold it tolerates (0.34 against 0.99) but is among the closest of the eight on the peptide-fraction axis (<b>74.4%</b> of its peptides clear 0.99, second only to RH5&rsquo;s 80.8%; the 70 in the table is the gene-rule slider setting, not a peptide fraction). The two axes rank the eight differently, so neither should be quoted alone.</p>
 
     <p>So the answer to &ldquo;does your tool recover the known antigens?&rdquo; is no &mdash; and it rejects them for exactly the reason the paper already identifies as having limited those vaccines in the field. That second half is an <em>interpretation</em> consistent with the computation, though the computation does not establish it. What the computation establishes is narrower: all eight fail the configured conservation criterion, and conservation is the filter responsible in every case. The step to &ldquo;working as intended&rdquo; rests on the paper&rsquo;s own argument about antigenic variation. Framed that way it is still the stronger answer to R2.1, and it claims no more than was shown.</p>
-    <p>Nothing here says whether these are good or bad vaccine targets. It says how established antigens behave under the criteria Pf-PeptideFilter implements. Step 18 asks for two things to be stated explicitly, and both hold: an established antigen <em>&ldquo;may fail because it is highly polymorphic, despite having demonstrated biological or immunological relevance&rdquo;</em> &mdash; which is what the percentile ranks in S1&ndash;S2 show for all eight &mdash; and, conversely, recovery would have <em>&ldquo;provide[d] a useful face-validity benchmark for the workflow but does not demonstrate that its retained peptides are immunogenic or protective&rdquo;</em>. Nothing here speaks to immunogenicity or protection in either direction.</p>
-    <p>One point of precision for the response, since the reviewer asked about <em>&ldquo;licensed and leading&rdquo;</em> antigens and the two are not the same. Of the eight, only <b>CSP</b> underlies a licensed product &mdash; both WHO-recommended and prequalified malaria vaccines, RTS,S/AS01 and R21/Matrix-M, are CSP-based. The other seven are clinical or preclinical candidates. Describe the panel as the eight the reviewer requested, <em>one licensed and seven leading candidates</em>, and read nothing here as evaluating a licensed vaccine.</p>
-    <p>One caveat on the per-filter failures below, established in S1 of &sect;A: <b>conservation</b> is the only filter all eight fail, though human similarity independently excludes CSP and indels independently exclude four more. Six of the eight fail the day-4 expression filter, but seven are expressed in sporozoites and substituting the sporozoite criterion retains none of them; RH5 lacking a <i>P. vivax</i> orthologue is expected biology for a <i>P. falciparum</i>-restricted gene. Count the conservation column, and treat expression and orthology as largely stage-explained.</p>
+    <p>Step 18 asks for two things to be stated explicitly, and both hold: an established antigen <em>&ldquo;may fail because it is highly polymorphic, despite having demonstrated biological or immunological relevance&rdquo;</em> &mdash; which is what the percentile ranks in S1&ndash;S2 show for all eight &mdash; and, conversely, recovery would have <em>&ldquo;provide[d] a useful face-validity benchmark for the workflow but does not demonstrate that its retained peptides are immunogenic or protective&rdquo;</em>. Nothing here speaks to immunogenicity or protection in either direction.</p>
+    <p>The reviewer asked about <em>&ldquo;licensed and leading&rdquo;</em> antigens, and the two are not the same thing. Of the eight, only <b>CSP</b> underlies a licensed product &mdash; both WHO-recommended and prequalified malaria vaccines, RTS,S/AS01 and R21/Matrix-M, are CSP-based. The other seven are clinical or preclinical candidates. Describe the panel as the eight the reviewer requested, <em>one licensed and seven leading candidates</em>, and read nothing here as evaluating a licensed vaccine.</p>
+    <p>One caveat on the per-filter failures below, established in S1 of <a href="#s05">&sect;05</a>: <b>conservation</b> is the only filter all eight fail, though human similarity independently excludes CSP and indels independently exclude four more. Six of the eight fail the day-4 expression filter, but seven are expressed in sporozoites and substituting the sporozoite criterion retains none of them; RH5 lacking a <i>P. vivax</i> orthologue is expected biology for a <i>P. falciparum</i>-restricted gene. Count the conservation column, and treat expression and orthology as largely stage-explained.</p>
   </div>
 
   <div class="tablebox">
@@ -580,9 +366,304 @@ footer{border-top:1px solid var(--rule);padding-top:22px;font-size:.82rem;color:
   </figure>
 </section>
 
+<!-- Sci -->
+<section id="s04">
+  <div class="shead"><span class="snum">04</span><h2>Changes needed to the manuscript</h2></div>
+
+  <div class="prose">
+    <p><b>Why five sentences in print have to change.</b> The gene-level controls are labelled &ldquo;% of peptides that must pass&rdquo;, but the code selects a precomputed percentile column and tests that &mdash; it never counts peptides. Take <code>PF3D7_0308800</code>, one of the 253: ten peptides at haplotype frequencies 0.9876, 0.9960, 0.9960, 0.9987, 0.9990, 0.9990, 0.9991, 0.9995, 0.9996, 0.9999. At a 0.99 threshold nine of ten pass &mdash; 90%, short of the 95% rule &mdash; so counting would drop the gene. The app takes the 5th percentile instead, interpolates between the lowest two values to 0.9914, and keeps it.</p>
+
+    <p>Label and arithmetic agree for most genes and diverge for a minority: <b>19 of the 253</b> are retained on fewer than 95% of their peptides actually meeting the threshold. That is what makes the five in-print sentences wrong, why Table B reports the slider setting and the true peptide fraction as separate columns, and why the two must not be converted into one another. The indel filter is the exception &mdash; its rule sits at 100%, so the percentile is the maximum and &ldquo;every peptide must pass&rdquo; is literally true.</p>
+  </div>
+
+
+  <div class="prose">
+    <p>Six changes, in the order to work through them. Five are in the published preprint; the sixth is in the paragraph drafted for the revision. All six are copy-ready in <code>analysis/MANUSCRIPT-CORRECTIONS.md</code> &mdash; sentence as published, replacement beneath. The detail and the numbers behind each follow below.</p>
+  </div>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th class="num">#</th><th>Where</th><th>The change</th><th>In print?</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Results</td><td>The <b>1,274-gene sentence</b>. The human gene rule is 75%, not 95%, and the sentence attaches 95% to both filters. Run as written it gives 158 genes.</td><td><span class="chip fail">yes</span></td></tr>
+        <tr><td class="num">2</td><td>Results</td><td>The <b>2,107-gene sentence</b>. The parenthetical says a haplotype present in 95% of isolates; the threshold is 99%.</td><td><span class="chip fail">yes</span></td></tr>
+        <tr><td class="num">3</td><td>Results</td><td><code>indel frequency &lt; 5%</code> &rarr; <code>&le; 5%</code>. No numerical effect.</td><td><span class="chip fail">yes</span></td></tr>
+        <tr><td class="num">4</td><td>Results</td><td>Homology names <i>P. vivax</i> <b>and</b> <i>P. berghei</i>; the published run used <i>P. vivax</i> alone. Both gives 251 genes.</td><td><span class="chip fail">yes</span></td></tr>
+        <tr><td class="num">5</td><td>Methods</td><td>&ldquo;assessed per peptide and <b>averaged across genes</b>&rdquo;. It is not a mean but a 75th-percentile test.</td><td><span class="chip fail">yes</span></td></tr>
+        <tr><td class="num">6</td><td>Methods</td><td>The expanded configuration paragraph drafted for the revision. Three clauses do not describe what the code does &mdash; <b>6a</b>, <b>6b</b>, <b>6c</b> below, with the full redraft after them.</td><td><span class="chip pass">not yet</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Changes 1–4 — errors already in print</h3>
+  <div class="callout">
+    <span class="eyebrow">The 1,274 sentence — wrong by a factor of eight</span>
+    <blockquote class="wrong" style="margin-bottom:6px">"Applying both the strain conservation and human identity filters simultaneously–i.e. by requiring <span class="hl">95% of peptides per gene</span> to exceed a 99% conservation threshold <span class="hl">and</span> remain below 80% identity to any human exon with a maximum alignment length of 15 amino acids–reduced the number of retained genes to 1,274"</blockquote>
+    <p style="margin:0">The human gene rule is <b>75%</b>, not 95%; the sentence attaches 95% to both filters. Run as described it gives <b>158 genes</b>, not 1,274. And "simultaneously … and" invites the joint-subset reading, which gives <b>92</b>: of the app’s 1,274, only 92 have ≥95% of peptides passing all three criteria together — conservation ≥0.99, identity ≤80% and alignment length ≤15&nbsp;aa. (Drop the length criterion from that reading and it is 1,133, which is why the subset has to be specified.) The 1,274 comes from conservation’s 5th-percentile test at ≥0.99 <em>and</em> identity’s 75th-percentile test at ≤80% <em>and</em> length’s 75th-percentile test at ≤15 aa, each evaluated separately — 1,274 / 158 / 92 for the three readings.</p>
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">The 2,107 sentence — the parenthetical names the wrong threshold</span>
+    <blockquote class="wrong" style="margin-bottom:6px">"… retain only those genes for which at least 95% of peptides exhibited a dominant haplotype (i.e. a haplotype present in <span class="hl">95% of isolates or more</span>), a total of 2,107 genes and 84,556 peptides were retained"</blockquote>
+    <p style="margin:0">It should read <b>99%</b>. The parenthetical conflates the gene rule (95% of peptides) with the frequency threshold (0.99). At 0.95 the same gene rule returns <b>3,824 genes</b>; 2,107 requires 0.99. The counts are right &mdash; 2,107 / <b>84,556</b> and 1,517 / <b>42,208</b> reproduce exactly, and both peptide figures are now asserted by <code>validate()</code>. The independently filtered peptide set is <b>326,701 for both</b> rows, since peptide-level filtering cannot see the gene rule &mdash; further confirmation that every peptide number in the paper is the &ldquo;belonging to&rdquo; definition.</p>
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">Two smaller mismatches in the same passage</span>
+    <p style="margin:0"><b>"indel frequency &lt; 5%"</b> — the code tests <code>≤ 0.05</code>. Here it changes nothing: every gene at or below 0.05 sits at exactly 0.0 and the next distinct value is 0.057, so strict and non-strict both give 3,457 genes. Worth aligning anyway, since a reviewer reproducing the work will notice.</p>
+    <p style="margin:0"><b>"cross-species homology (presence of one-to-one orthologs in <i>P. vivax</i>, and <i>P. berghei</i>)"</b> — the published configuration requires <i>P. vivax</i> only. Requiring both gives <b>251 genes</b>, not 253. The very next sentence says "homology with <i>P. vivax</i>", so the two disagree with each other.</p>
+  </div>
+
+  <h3>5 — &ldquo;averaged across genes&rdquo; in the published Methods</h3>
+
+  <div class="prose">
+    <p>One further wording point in the published Methods, and it is the same class of error as <a href="#s04">&sect;04</a>. The Methods say human identity is <em>"assessed per peptide and averaged across genes"</em>, and Table 1 says <em>"filtering is performed at the peptide level and summarised per gene"</em>. Neither is a mean: the default rule is a 75th-percentile test. "Averaged" is wrong and "summarised" is too vague to reproduce from — both should name the percentile.</p>
+  </div>
+
+  <div class="prose">
+    <p>The preprint’s <em>default-thresholds</em> sentence reproduces the result correctly. It describes the catalogue as <em>"default thresholds (human identity &le; 80%, strain conservation &ge; 99%, indel frequency &lt; 5<mark style="background:var(--reject-soft);color:var(--reject)">.</mark> homology with <i>P. vivax</i>, gene expression in day 4 of liver stage infection)"</i></em> — and it reproduces 253 genes and 10,088 peptides exactly. Two details in that sentence and its neighbour still need correcting, though neither changes a number: the operator is <code>&le;</code> rather than <code>&lt;</code>, and the preceding sentence names both <i>P. vivax</i> and <i>P. berghei</i> where the run used <i>P. vivax</i> alone. Both are in the “two smaller mismatches” callout below.</p>
+    <p>Every <em>count</em> in the preprint reproduces; it is the prose describing how the counts were reached that is wrong. The two sentences before it, giving the 2,107 and 1,274 figures, do not match the configuration that produces them &mdash; and unlike the methods paragraph, they are already in print. The expanded paragraph drafted for the revision has three clauses that do not describe what the code does: one wrong number, and two that describe the gene-level rule in a way the implementation does not support.</p>
+    
+  </div>
+
+  <h3>6a — the indel gene rule was 100%, not 95%</h3>
+  <blockquote class="wrong">"For indel filtering, <span class="hl">at least 95% of peptides</span> within each gene were required to pass the ≤5% frequency threshold, considering indels of any type or predicted effect."</blockquote>
+
+  <div class="callout">
+    <span class="eyebrow">What it actually was</span>
+    <p style="margin:0">The indel gene rule was left at the application default of <b>100% of peptides</b>. At 95% the catalogue is <b>291 genes / 13,772 peptides</b>, not 253 / 10,088. The other two figures in that paragraph — 75% for human identity, 95% for conservation — are correct.</p>
+  </div>
+
+  <h3>6b — "applied jointly" describes something the app does not do</h3>
+  <blockquote class="wrong">"For human identity filtering, <span class="hl">at least 75% of peptides within each gene were required to pass, with the identity and alignment-length criteria applied jointly</span> and a maximum alignment length of 15 amino acids."</blockquote>
+
+  <div class="callout">
+    <span class="eyebrow">What it actually was</span>
+    <p style="margin:0">Two <em>separate</em> percentile columns are tested and combined with <code>AND</code>: <code>blt_pident_p75 &le; 80</code> and <code>blt_length_p75 &le; 15</code>. Each is the 75th percentile of that one metric across the gene's peptides, computed independently of the other. The app never asks whether the <em>same</em> 75% of peptides satisfies both conditions.</p>
+    <p style="margin:0">The distinction changes the catalogue. <b>10 of the 253 retained genes</b> have fewer than 75% of their peptides satisfying both conditions at once, so a filter written the way the paragraph describes would drop them — <code>PF3D7_1203200</code> (70.0% of peptides pass both), <code>PF3D7_0721100</code> (70.8%), <code>PF3D7_0628500</code> (71.0%), <code>PF3D7_0722700</code> (71.4%), <code>PF3D7_1237700</code> (71.4%), <code>PF3D7_1404400</code> (72.2%), <code>PF3D7_0512000</code> (72.7%), <code>PF3D7_1308100</code> (73.3%), <code>PF3D7_1015100</code> (74.4%), <code>PF3D7_1343400</code> (74.5%). Across all 4,937 genes the identity-passing and length-passing peptide subsets differ for <b>4,846</b> of them. (4,840 is the count whose passing <em>fractions</em> differ; a further 6 genes pass equal numbers of peptides on each criterion but not the same ones — exactly the case the word “jointly” would have to cover.)</p>
+    <p style="margin:0">Separately: the <code>human_id_joint_rule</code> setting itself has <b>no effect on any result</b>. Applying two column tests in one nested group or in two sequential steps is the same set intersection, and a run of both options returns byte-identical gene sets (253 under M253, 1,142 under application defaults). The radio button changes only how the app groups the two tests in its own step summary — one row rather than two.</p>
+  </div>
+
+  <h3>6c — the conservation clause has the same problem</h3>
+  <blockquote class="wrong">"For strain conservation, <span class="hl">at least 95% of peptides within each gene were required to meet the &ge;99% frequency threshold</span>, using the dominant amino-acid haplotype irrespective of whether it matched the 3D7 reference."</blockquote>
+
+  <div class="callout">
+    <span class="eyebrow">What it actually was</span>
+    <p style="margin:0">The code tests <code>hap_top_hap_freq_p05 &ge; 0.99</code>. The suffix is <code>_p{100 &minus; haplotype_gene_pc}</code>, an inversion the human and indel filters do not have, and the direction is right &mdash; the 5th percentile clearing 0.99 is the percentile form of &ldquo;95% of peptides must pass&rdquo;. But it interpolates linearly between the two peptides that straddle it rather than counting. <b>19 of the 253</b> are kept on fewer than 95% of their peptides at &ge;0.99; <code>PF3D7_0308800</code> is retained on 90.0% (10 peptides, 9 passing, 5th percentile 0.9914). Genome-wide the effect runs <b>99 genes admitted</b> on fewer than 95%, against <b>2 rejected</b> despite meeting the count (<code>PF3D7_0714500</code>, <code>PF3D7_1443800</code>, both at exactly 0.95).</p>
+    <p style="margin:0">The indel clause needs no such repair. Its rule is <code>_p100</code>, the maximum, where the percentile and the count agree exactly — "all peptides within each gene" is literally true, on all 4,937 genes.</p>
+    <p style="margin:0">Verified against the four published figures, which still reproduce exactly: only <code>_p05</code> gives 2,107 genes (<code>_p04</code> gives 1,913, <code>_p06</code> gives 2,291), so the inversion is both implemented and used correctly.</p>
+  </div>
+
+  <div class="prose">
+    <p>One more point: <b>10,088</b> is the number of peptides <em>belonging to</em> the 253 retained genes, as reported on the app's gene-results page. Pf-PeptideFilter also filters peptides independently, and that count for the same configuration is <b>84,859</b>. Both are legitimate; the paper should say which one it means.</p>
+  </div>
+
+  <h3>Redrafted paragraph</h3>
+
+  <p class="note-under"><b>How to read it:</b> <span class="chip ok" style="font-weight:500">green</span> marks the clauses that differ from the paragraph as currently drafted &mdash; those are the edits. Grey italic is a placeholder still to be filled. Everything unmarked is the existing text, unaltered.</p>
+
+
+  <div class="prose">
+    <p><b>Drafted by Claude (Opus 5)</b> from the corrections above &mdash; a starting point to edit, not finished prose. Highlighted spans are the clauses that changed; the rest is the existing paragraph unaltered.</p>
+  </div>
+
+  <div class="draft">
+    As an illustrative analysis, we applied the application's default thresholds for human identity (≤80%), strain conservation (≥99%) and indel frequency (≤5%), together with two filters that are not active by default: liver-stage expression and cross-species homology. All remaining settings were left at their defaults. <span class="fix">For human identity filtering, genes were retained where the 75th percentile of peptide identity was ≤80% and the 75th percentile of peptide alignment length was ≤15 amino acids, each percentile evaluated separately across the gene’s peptides; the two criteria therefore apply to the same gene but need not be met by the same subset of its peptides.</span> <span class="fix">For strain conservation, genes were retained where the 5th percentile of peptide haplotype frequency was ≥99% — the percentile form of the application’s “at least 95% of peptides” gene rule — using the dominant amino-acid haplotype irrespective of whether it matched the 3D7 reference.</span> For indel filtering, <span class="fix">all peptides within each gene (100%)</span> were required to pass the ≤5% frequency threshold, considering indels of any type or predicted effect. For the expression filter, genes were required to have expression of ≥1 CPM in all three biological replicates at liver-stage day 4. Day 4 was selected as a representative intermediate liver-stage time point because it provides substantially greater parasite transcript coverage than day 2, while preceding the late liver-stage transcription observed at days 5 and 6 <span class="todo">[ref still needed]</span>.<span class="todo"> [Supported by the application’s own expression table, worth citing alongside any external reference — see the note below.]</span> For the homology filter, we required the presence of a <i>P. vivax</i> orthologue, as <i>P. vivax</i> is a major human malaria parasite and therefore provides a biologically relevant cross-species comparator, while also illustrating the functionality of the homology filter. Under this configuration, <span class="fix">253 genes were retained, collectively containing 10,088 peptides. Because Pf-PeptideFilter applies gene-level and peptide-level filtering independently, we report here the total number of peptides belonging to the retained genes.</span> This represents a shortlist of potential vaccine targets for downstream experimental validation rather than a uniquely optimal candidate set.
+  </div>
+
+  <div class="callout note">
+    <span class="eyebrow">The Day-4 claim is supported by the app’s own data</span>
+    <p style="margin:0">The <code>[ref still needed]</code> marker is still a blocker for an external citation, but the claim is no longer resting on one. Counting genes at ≥1 CPM in all three replicates in <code>data/gene-metrics-filtering.csv.gz</code>:</p>
+    <div class="tablebox" style="margin:4px 0">
+      <table>
+        <thead><tr><th>Liver stage</th><th class="num">Genes ≥1 CPM in all 3 replicates</th><th class="num">Genes ≥1 CPM in ≥1 replicate</th><th class="num">Median CPM</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Day 2</td><td class="num">36</td><td class="num">1,486</td><td class="num">0.00</td></tr>
+          <tr class="ref"><td class="name">Day 4</td><td class="num">1,583</td><td class="num">4,364</td><td class="num">22.09</td></tr>
+          <tr><td class="name">Day 5</td><td class="num">4,375</td><td class="num">4,766</td><td class="num">64.77</td></tr>
+          <tr><td class="name">Day 6</td><td class="num">4,657</td><td class="num">4,793</td><td class="num">67.45</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin:0">Day 2 is unusable at this rule — 36 genes of 4,937, median CPM 0.00 — while days 5 and 6 are close to saturation (4,375 and 4,657, i.e. 89% and 94% of all genes), at which point the filter stops discriminating. Day 4 at 1,583 genes is the only one of the four that is both well-powered and selective, which is precisely the "representative intermediate" argument, from the data the app ships. Cite the table; add the external reference when one is available.</p>
+  </div>
+
+  <h3>Completeness check on the redraft</h3>
+  <p class="note-under" style="margin-bottom:2px">All 17 settings in the frozen configuration
+  (<code>analysis/output/configs/config_M253.json</code>) are accounted for: 16 are stated in the
+  paragraph above, and the 17th — <code>human_id_joint_rule</code> — is deliberately not, because
+  it does not change the output. Nothing else is left implicit. Checked setting by setting against
+  the JSON.</p>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Setting</th><th class="mono">Value</th><th>Where the paragraph states it</th></tr></thead>
+      <tbody>
+        <tr><td class="name">human_id_gene_rule</td><td class="mono">min % of peptides</td><td>"the 75th percentile of peptide identity … and the 75th percentile of peptide alignment length"</td></tr>
+        <tr><td class="name">human_id_gene_pc</td><td class="mono">75</td><td>"the 75th percentile" — same clause</td></tr>
+        <tr><td class="name">human_id_joint_rule</td><td class="mono">Joint</td><td><b>not stated, by design</b> — the setting has no effect on the gene or peptide set (verified: both options return the identical 253 genes). It changes only the app’s step summary, so stating it in Methods would imply a constraint that is not applied.</td></tr>
+        <tr><td class="name">identity_percent</td><td class="mono">80</td><td>"human identity (≤80%)"</td></tr>
+        <tr><td class="name">alignment_length</td><td class="mono">15</td><td>"maximum alignment length of 15 amino acids"</td></tr>
+        <tr><td class="name">haplotype_gene_rule</td><td class="mono">min % of peptides</td><td>"the 5th percentile of peptide haplotype frequency … the percentile form of the application’s ‘at least 95% of peptides’ gene rule"</td></tr>
+        <tr><td class="name">haplotype_gene_pc</td><td class="mono">95</td><td>"at least 95% of peptides" — same clause, via the <code>100−pc</code> inversion</td></tr>
+        <tr><td class="name">haplotype_type</td><td class="mono">Any haplotype</td><td>"irrespective of whether it matched the 3D7 reference"</td></tr>
+        <tr><td class="name">strain_conservation</td><td class="mono">0.99</td><td>"the 5th percentile … was ≥99%"</td></tr>
+        <tr><td class="name">indel_frequency</td><td class="mono">0.05</td><td>"the ≤5% frequency threshold"</td></tr>
+        <tr><td class="name">indel_gene_pc</td><td class="mono">100</td><td>"all peptides within each gene (100%)" — the corrected clause</td></tr>
+        <tr><td class="name">indel_type</td><td class="mono">Any</td><td>"indels of any type"</td></tr>
+        <tr><td class="name">indel_frameshfits</td><td class="mono">Any</td><td>"or predicted effect"</td></tr>
+        <tr><td class="name">expression_rule</td><td class="mono">All replicates</td><td>"in all three biological replicates"</td></tr>
+        <tr><td class="name">cpm_cutoff</td><td class="mono">1</td><td>"expression of ≥1 CPM"</td></tr>
+        <tr><td class="name">expression_stage</td><td class="mono">Liver Stage Day 4</td><td>"at liver-stage day 4"</td></tr>
+        <tr><td class="name">homology_species</td><td class="mono">P. vivax</td><td>"the presence of a <i>P. vivax</i> orthologue"</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <h3>Proposed Results summary (Step 20)</h3>
+  <div class="prose">
+    <p>Step 20 asks for &ldquo;a short summary&rdquo; covering five named components. <b>The passage below was drafted by Claude (Opus 5) from the analysis outputs</b>, as a starting point to edit rather than finished prose. It is not in the manuscript and no manuscript file has been touched. Every figure in it comes from <code>analysis/output/</code>. <b>How to read it:</b> <span class="chip ok" style="font-weight:500">green</span> marks the clauses that are only there because of a finding in <a href="#s05">&sect;05</a> &mdash; the life-stage caveat, the percentile ranks and the African-only scope. The rest is straightforward reporting of Table A.</p>
+  </div>
+  <div class="draft">
+    To assess how sensitive the illustrative catalogue is to the chosen thresholds, we varied each of the five filters in turn while holding the other four at the published configuration. <span class="fix">This gave thirteen single-filter variants, which together with the two reference configurations make fifteen runs in total (Supplementary Table A). Four of the five filters were varied in both directions; the indel filter admits relaxation only, because the published configuration already requires every peptide in a gene to pass and the frequency threshold is inert at every value below 5%.</span> Candidate-set size ranged from 176 to 1,142 genes against a baseline of 253. <span class="fix">Composition was nested in the direction each variant moves: every relaxation retained all 253 published genes, and each of the three configurations that tightened a criterion was a strict subset of them.</span> The catalogue was most sensitive to the expression and conservation criteria &mdash; relaxing the day-4 replicate requirement from three replicates to two more than doubled it to 596 genes (gene-set Jaccard 0.42 against the published catalogue), and lowering the haplotype-frequency threshold from 0.99 to 0.95 added 164 genes &mdash; and least sensitive to the indel frequency threshold, which added 7 genes (Jaccard 0.97) across its full usable range. The published catalogue is a strict subset of the one produced by the application&rsquo;s default settings: all 253 genes are retained among the 1,142 obtained with the two optional filters inactive, the difference being entirely the addition of the liver-stage expression and <i>P. vivax</i> orthology requirements.
+
+    None of the eight benchmark vaccine antigens was retained under the published configuration, nor under any of the fifteen runs examined (Supplementary Table B). Strain conservation was the criterion responsible in every case: all eight fell below the requirement that a gene&rsquo;s 5th-percentile peptide haplotype frequency reach 0.99 &mdash; the percentile form of the application&rsquo;s &ldquo;95% of peptides&rdquo; gene rule &mdash; with the proportion of qualifying peptides ranging from 22.8% (TRAP) to 80.8% (RH5), and five of the eight ranking within the bottom 1% of all genes on this metric. <span class="fix">Conservation was not, however, the only criterion to exclude these antigens on grounds independent of life stage: applying the human-similarity and indel filters alone returns 2,397 genes and restores only three of the eight, with circumsporozoite protein excluded by human similarity and TRAP, EBA175, MSP1 and LSA3 by indel frequency.</span> <span class="fix">Six of the eight did not meet the liver-stage day-4 expression requirement, which for the four blood-stage antigens in the panel reflects the life stage assayed rather than a property of the gene; seven of the eight are expressed in sporozoites, and substituting the sporozoite-stage criterion returned 695 genes without restoring any antigen to the catalogue.</span>
+
+    These results indicate that the catalogue&rsquo;s size is materially dependent on the expression and conservation thresholds while its composition is stable under relaxation, and that established vaccine antigens are excluded by this workflow principally because <span class="fix">they are among the most polymorphic genes in the 8,492 African isolates from which the conservation metric is derived</span> &mdash; a consequence of the conservation-first design rather than an assessment of their merit as vaccine targets. <span class="fix">Because conservation is estimated from African genomes only, the catalogue should be understood as conserved with respect to that population rather than globally.</span>
+  </div>
+  <p class="note-under">That covers all five of Step 20&rsquo;s components in order: degree of change in counts and composition; which filters produced the greatest sensitivity; similarity between the M253 and application-default catalogues; which benchmark antigens were retained under M253 (none, stated directly); and which filters excluded the rest. The stage caveat from S1, the percentile ranks from S2 and the African-only scope from S4 are folded in, since each changes what the passage is entitled to claim &mdash; it no longer blames the non-conservation failures on life stage alone, four indel failures and one human-similarity failure being stage-independent, and it no longer calls the identity-only rows tightenings, since they gain genes.</p>
+
+  <h3>Text changes argued elsewhere in this report</h3>
+
+  <div class="prose">
+    <p>Seven further wording points fall out of the analysis rather than from a mismatch with the code, so the argument for each sits in the section that produced it. Listed here so the whole set of manuscript edits can be worked through from one place.</p>
+  </div>
+
+  <dl class="kv">
+    <dt>Results</dt><dd>The human identity threshold is inert over its whole upper range while the alignment-length criterion is active &mdash; worth one sentence. <b><a href="#s02">&sect;02</a></b></dd>
+    <dt>Methods</dt><dd>Describe the 5-CPM value as a prespecified sensitivity setting, not a validated boundary (plan Step 6). <b><a href="#s02">&sect;02</a></b></dd>
+    <dt>Results / Discussion</dt><dd>Describe the panel as the eight antigens the reviewer requested &mdash; <em>one licensed and seven leading candidates</em> &mdash; since only CSP underlies a licensed product. <b><a href="#s03">&sect;03</a></b></dd>
+    <dt>Results</dt><dd>Quote the genome percentile ranks, not just pass/fail: five of the eight are in the bottom 1% for conservation. <b><a href="#s05">&sect;05</a></b>, S2</dd>
+    <dt>Results</dt><dd>Do not present the antigen exclusions as five independent filter failures &mdash; three of the five filters discriminate on stage-independent grounds, and conservation is the only one that catches all eight. <b><a href="#s05">&sect;05</a></b>, S1</dd>
+    <dt>Methods</dt><dd>Give the day-4 rationale as parasite transcript depth, and note that &ldquo;&ge;1 CPM&rdquo; is not constant stringency across stages. <b><a href="#s05">&sect;05</a></b>, S6</dd>
+    <dt>Discussion</dt><dd>State that conservation is measured in African isolates only (8,492 of Pf7&rsquo;s 16,203 genomes), so the catalogue is African-frequency rather than global. <b><a href="#s05">&sect;05</a></b>, S4</dd>
+    <dt>Methods</dt><dd>State the peptide definition once &mdash; peptides <em>belonging to</em> retained genes &mdash; and use it throughout. <b><a href="#s05">&sect;05</a></b>, S8</dd>
+  </dl>
+</section>
+
+<div style="border-top:2px solid var(--rule);padding-top:24px;margin-bottom:-18px">
+  <span class="eyebrow">Everything below is additional &mdash; not part of the plan</span>
+</div>
+
+<section id="s05">
+  <div class="shead"><span class="snum">05</span><h2>Additional comments</h2></div>
+
+  <div class="prose">
+    <p>Eight further points that came out of the work, plus one defect found in a shipped data column along the way. Each affects what the write-up can claim.</p>
+  </div>
+
+  <h3>How the numbers were produced</h3>
+
+  <div class="prose">
+    <p>Every figure comes from a run of the app&rsquo;s own <code>filter_datasets()</code> in <code>pep/filter.py</code>, against the repository&rsquo;s own <code>config/filters.json</code> and <code>data/*.csv.gz</code>; no filter condition is reimplemented anywhere. <code>filter_datasets()</code> touches Streamlit in two lines, both plain reads of the settings, so substituting a dictionary lets it run from a script &mdash; which is what makes 269 configurations feasible where clicking sliders is not (24 in <code>run_sensitivity.py</code>, 245 in <code>run_antigens.py</code>, counted by instrumenting <code>run()</code>).</p>
+    
+  </div>
+
+  <h3>Provenance checks against the live repository</h3>
+  <p class="note-under" style="margin-bottom:-4px">Checked against <code>github.com/malariagen/pf-peptidefilter</code> fetched 4 September 2026 — <code>prod</code> at <code>5861f79</code>, <code>main</code> at <code>3a9af72</code> — not against a cached copy. Every app file in the working tree used for the analysis is byte-identical to live <code>main</code>.</p>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Component</th><th>Live <code>prod</code> (5861f79)</th><th>What was run</th></tr></thead>
+      <tbody>
+        <tr><td class="name">gene-metrics-filtering.csv.gz</td><td class="mono">md5 fdee05f9…</td><td><span class="chip ok">identical</span></td></tr>
+        <tr><td class="name">peptide-metrics-filtering.csv.gz</td><td class="mono">md5 3380de0f…</td><td><span class="chip ok">identical</span></td></tr>
+        <tr><td class="name">go-data-core.csv</td><td class="mono">md5 compared</td><td><span class="chip ok">identical</span></td></tr>
+        <tr><td class="name">config/filters.json</td><td class="mono">byte-for-byte</td><td><span class="chip ok">identical</span></td></tr>
+        <tr><td class="name">UI defaults (all thresholds)</td><td class="mono">UI_CONFIG</td><td><span class="chip ok">identical</span></td></tr>
+        <tr><td class="name">Filtering logic</td><td class="mono">peptidefilter/filter.py</td><td>differs only in import order and one summary column renamed <code>proportion</code> → <code>fraction</code>; no difference in filtering behaviour</td></tr>
+        <tr><td class="name">Environment</td><td class="mono">pandas 1.5.1</td><td><span class="chip ok">pinned to match</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Reproduction of published figures</h3>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Result in the preprint</th><th class="num">Published</th><th class="num">Reproduced</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Conservation alone, 95% of peptides at ≥99%</td><td class="num">2,107 genes</td><td class="num">2,107</td><td><span class="chip ok">match</span></td></tr>
+        <tr><td>Conservation at 99% of peptides</td><td class="num">1,517 genes</td><td class="num">1,517</td><td><span class="chip ok">match</span></td></tr>
+        <tr><td>Conservation + human identity</td><td class="num">1,274 genes</td><td class="num">1,274</td><td><span class="chip ok">match</span></td></tr>
+        <tr><td>All five filters (the illustrative catalogue)</td><td class="num">253 / 10,088</td><td class="num">253 / 10,088</td><td><span class="chip ok">match</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note-under">These four are run as an assertion at the start of every analysis script (<code>pepfilter_headless.validate()</code>); the analysis aborts if any of them drifts.</p>
+
+
+  <div class="callout">
+    <span class="eyebrow">A defect in a shipped column &mdash; <code>num_peptides</code> is short by one</span>
+    <p style="margin:0">The <code>num_peptides</code> column in the app&rsquo;s own <code>gene-metrics-filtering.csv.gz</code> is <b>exactly one less</b> than the gene&rsquo;s true peptide count for <b>4,423 of 4,937 genes</b>; the difference is &minus;1 or 0 and never anything else. Over the whole table it gives 374,902 against 379,325 actual peptide rows, and over the published catalogue <b>9,861 against the correct 10,088</b>.</p>
+    <p style="margin:0">No published figure is affected &mdash; every peptide count comes from counting rows, and <code>validate()</code> confirms 10,088 independently. But the column is copied into all 15 per-run gene catalogues in <code>run_outputs/</code>, so anyone summing it lands 227 peptides away from the paper. Drop or recompute it before <code>analysis/</code> is deposited anywhere citable. The defect is upstream, and worth reporting to the app&rsquo;s maintainers.</p>
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">S1 &middot; Life-stage mismatch in the antigen panel</span>
+    <p style="margin:0">The panel mixes stages: CSP, TRAP, CelTOS and LSA3 are pre-erythrocytic; AMA1, MSP1, RH5 and EBA175 are blood-stage. M253 requires <b>liver-stage day-4 expression</b> and six of the eight fail it, which on the face of it asks merozoite antigens to be expressed in liver stage.</p>
+    <p style="margin:0">Failure does not track stage, though: CSP and AMA1 both pass the day-4 filter, while LSA3, a liver-stage antigen, fails at &ge;1&nbsp;CPM in only 1 of 3 replicates (11.04, 0, 0). And the headline does not rest on those filters. The sporozoite-stage filter gives 695 genes and retains none of the eight; removing expression and orthology entirely gives 1,142 and retains none. <b>All eight fail strain conservation</b>, which is stage-independent.</p>
+    <p style="margin:0">The per-filter reasons still need the caveat. Seven of the eight pass sporozoite expression in all five replicates (EBA175 at 2 of 5), so those failures are largely a stage artefact, and RH5 is <i>P. falciparum</i>-restricted so failing a <i>P. vivax</i> requirement is expected. But conservation is not the only stage-independent discriminator: drop it, keep human similarity and indels, and 2,397 genes return with only <b>three of the eight</b> re-entering (AMA1, RH5, CelTOS). Human similarity excludes CSP; indels exclude TRAP, EBA175, MSP1 and LSA3 (MSP1&rsquo;s maximum indel frequency is 0.817 against 0.05). Three of the five filters discriminate on stage-independent grounds &mdash; conservation is just the one that catches all eight.</p>
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">S2 &middot; Is the benchmark circular?</span>
+    <p style="margin:0">The tool selects for conserved targets and these eight are famous for antigenic variation &mdash; the paper&rsquo;s own Discussion says so &mdash; so a benchmark that rejects them risks confirming only that the filter does what it is defined to do. As a pass/fail table that objection largely stands.</p>
+    <p style="margin:0">Percentile ranks blunt it, because the result becomes graded rather than binary. It does not dissolve the objection &mdash; the metric being ranked is still the one the filter selects on &mdash; but the answer could have come out otherwise. On conservation the eight are extreme: AMA1 and CelTOS beat <b>0.0%</b> of the genome, TRAP 0.1%, CSP 0.3%, MSP1 0.8%, EBA175 2.0%, LSA3 12.6%, RH5 17.5%. <b>Five sit in the bottom 1%</b> &mdash; AMA1 0.02%, CelTOS 0.04%, TRAP 0.14%, CSP 0.30%, MSP1 0.83% &mdash; with EBA175 sixth at 2.03%. (4,930 genes carry a conservation value, 4,933 an identity value, all 4,937 an indel value.)</p>
+    <p style="margin:0">The scales are not comparable, and that needs saying. Ties at the best value cap what any gene can score: conservation reaches <b>99.6%</b>, human identity only <b>56.7%</b> (2,138 genes tie) and indel frequency <b>30.0%</b> (3,457 tie). The eight span 6.9&ndash;56.7% on identity, six at or near the ceiling, and five sit exactly at the indel ceiling, with MSP1 at 1.9% and LSA3 at 7.4%. So on identity and indels most are about as good as a gene can be; only on conservation are they extreme. The columns are in Table B (<code>*_genome_percentile</code>).</p>
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">S3 &middot; One filter at a time understates sensitivity by about 2.5&times;</span>
+    <p style="margin:0">The plan scoped this deliberately: <em>&ldquo;This is by no means an exhaustive analysis but we are not going to iterate through hundreds of combinations&rdquo;</em>. A factorial sweep is not the remedy, but the write-up should not imply the design explores the space.</p>
+    <p style="margin:0">Interactions are measurable. Identity is inert only because alignment length binds. Tightening conservation to the 99% gene rule costs <b>77 genes</b> at the default human setting but <b>119</b> when the human gene rule is loosened to 50%. Some pairs do not interact: relaxing orthology and relaxing the indel gene rule add disjoint sets and combine exactly additively (328 = 253 + 37 + 38).</p>
+    <p style="margin:0">In aggregate the compounding is large. Relaxing all five at once gives <b>2,048 genes</b> against an additive prediction of 958 from arms gaining 705 between them &mdash; 1,795 where one-at-a-time predicts 705. That uses the indel <em>gene-rule</em> arm (<code>alignment_length&nbsp;&le;18</code>, <code>strain_conservation&nbsp;&ge;0.95</code>, <code>indel_gene_pc&nbsp;=&nbsp;95</code>, &ge;2 D4 replicates, no orthology); the indel <em>frequency</em> arm (<code>&le;0.10</code>) gives <b>1,565</b> against 927. Both are cross-checks outside Table A, recorded in <code>analysis/output/interaction_checks.txt</code>. Conjunctive filters behave this way &mdash; relaxing one admits only genes already passing the other four &mdash; so the single-filter table bounds sensitivity from below. One extra all-relaxed row would bound the space for one run. Beyond what the plan asked for.</p>
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">S4 &middot; Conservation is measured in African isolates only</span>
+    <p style="margin:0">Strain conservation comes from haplotype frequencies in <b>8,492 African isolates</b>, a subset of Pf7&rsquo;s 16,203 genomes. The paper states the scope in Methods, in Table 1 and in the Results, and the plan&rsquo;s Step 4 confirms that the 1.00 setting &ldquo;requires the selected haplotype to be observed in all callable <b>African</b> samples&rdquo;. What neither the paper nor this report does is flag it as a <em>limitation</em>.</p>
+    <p style="margin:0">It is one. Conservation in one continental population says nothing about conservation elsewhere, so the catalogue is an African-frequency catalogue and should be described as one. That is a limitation of the data, not a claim about any antigen&rsquo;s geographic allele-frequency structure. It belongs in the Discussion in a sentence.</p>
+    <p style="margin:0">The sensitivity analysis cannot address it: the app ships a single African-derived conservation metric, so there is no second geography to vary.</p>
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">S5 &middot; The 0.99 threshold cannot be checked against sampling error</span>
+    <p style="margin:0">Each peptide&rsquo;s haplotype frequency is an estimate from a finite sample, so a hard cut at 0.99 moves genes for statistical as well as biological reasons. That cannot be assessed from the shipped data: <b>neither table carries a coverage or callable-sample count</b>, so there is no denominator. Nor are the frequencies integer multiples of 1/8,492 &mdash; only 14% are consistent with that, and the observed granularity is ~1.4&times;10&#8315;&#8312; &mdash; so no binomial interval can be constructed.</p>
+    <p style="margin:0">What can be measured is fragility to the threshold. Of the 253 retained genes, <b>18 have a 5th-percentile haplotype frequency in [0.990, 0.991)</b> &mdash; within 0.001 of the cut &mdash; 33 within 0.002 and 89 within 0.005; the closest sits at 0.99007. Genome-wide, 1,218 genes fall in [0.985, 0.995). A sub-1% movement reshuffles a material fraction of the catalogue &mdash; a caveat on the precision of &ldquo;253&rdquo;.</p>
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">S6 &middot; &ldquo;Day 2 is unusable&rdquo; is a library-depth artefact</span>
+    <p style="margin:0">The day-2/4/5/6 comparison is correct as counts, but the inference drawn from it was wrong. There is no library-size column; the totals are diagnostic. Summed CPM per replicate: <b>day 2 &mdash; 679,169 / 433,162 / 15,682</b>; day 4 &mdash; 755,198 / 1,012,068 / 537,141; day 5 &mdash; 913,866 / 1,019,839 / 974,892; day 6 &mdash; 834,453 / 801,665 / 949,551; sporozoite &mdash; 1.8 to 5.9 million.</p>
+    <p style="margin:0">CPM summed over a transcriptome should be 10&#8310;. It is, at days 5 and 6. It is not at day 2, and one day-2 replicate totals <b>15,682 &mdash; 1.6% of a day-5 replicate</b>. These are parasite CPM within libraries dominated by host hepatocyte reads, so at day 2 there is almost no parasite material to measure: 3,367 of 4,937 genes are zero in all three day-2 replicates, against 46 at day 5 and 8 at day 6. Since the rule requires all three replicates, the day-2 figure of 36 genes is effectively set by that one near-empty replicate.</p>
+    <p style="margin:0">Day 4 still stands, for a different reason than given: day 2 cannot support a replicate-based filter <em>in these libraries</em>. It also means <b>&ldquo;&ge;1 CPM&rdquo; is not constant stringency across stages</b> &mdash; totals differ by up to ~380&times; &mdash; so cross-stage readings, and the &ge;5&nbsp;CPM arm, are depth-relative. M253 uses day 4 alone, so the published result is internally consistent.</p>
+  </div>
+
+  <div class="callout note">
+    <span class="eyebrow">S7 &middot; Statistics and reporting</span>
+    <p style="margin:0">No inferential statistics are used, which is right for a descriptive sensitivity analysis; nothing claimed would need a test, a p-value or a confidence interval.</p>
+    <p style="margin:0">Every scenario is nested with respect to M253, verified by set inclusion at gene and peptide level for all 15. Containment is more interpretable than Jaccard for nested sets, and Table A reports both. <b>The trap:</b> M253&rsquo;s Jaccard against APP is 0.222, which invites the reading that the catalogues disagree. They do not &mdash; M253 is a perfect subset and 100% of its genes are retained. The 0.222 is entirely the 889-gene size difference. Read containment whenever sets are nested and differently sized.</p>
+    <p style="margin:0">The replacement scenarios were chosen after seeing the originals fail, which is legitimate exploratory work. It is disclosed in <code>rejected_scenarios.csv</code> and in departure 3 above.</p>
+  </div>
+
+  <div class="callout note">
+    <span class="eyebrow">S8 &middot; Two peptide definitions</span>
+    <p style="margin:0">Three numbers exist for the same runs, all legitimate: 10,088 peptides <em>belonging to</em> the 253 retained genes; 84,859 for the independently filtered peptide set at the same configuration; and 326,701 for <em>both</em> conservation-only rows, because peptide-level filtering strips the percentile suffix and cannot see the gene rule. Table A uses the belonging definition throughout and <code>validate()</code> gates 84,556 and 42,208 on it, which is what the paper reports. State the definition once in Methods and use it everywhere.</p>
+  </div>
+</section>
+
 <!-- 5 -->
-<section>
-  <div class="shead"><span class="snum">05</span><h2>Proposed outputs</h2></div>
+<section id="s06">
+  <div class="shead"><span class="snum">06</span><h2>Proposed outputs</h2></div>
   <dl class="kv">
     <dt>Supplementary Table A</dt><dd>The 15 configurations above — sizes, overlap with both reference catalogues, antigen retention. <code>supplementary_table_A_sensitivity.csv</code></dd>
     <dt>Supplementary Table B</dt><dd>The eight antigens, their per-filter values and PASS/FAIL calls, and the filters responsible for exclusion. <code>supplementary_table_B_antigens.csv</code></dd>
@@ -596,31 +677,31 @@ footer{border-top:1px solid var(--rule);padding-top:22px;font-size:.82rem;color:
 
   <div class="callout">
     <span class="eyebrow">What "reproducible" does and does not cover</span>
-    <p style="margin:0">The <em>app and data</em> the analysis ran against are verified byte-identical to live <code>main</code> (§01). The <em>analysis itself</em> is not in the repository — <code>analysis/</code> is untracked, so a third party cloning <code>malariagen/pf-peptidefilter</code> gets the app and the data but not these scripts or outputs. That is deliberate for now, but it means the reproducibility claim is "re-runnable by us against a verified app", not "re-runnable by a reviewer from the public repo". If the revision cites this analysis, the scripts need to land somewhere citable.</p>
+    <p style="margin:0">The <em>app and data</em> the analysis ran against are verified byte-identical to live <code>main</code> (<a href="#s05">&sect;05</a>). The <em>analysis itself</em> is not in the repository — <code>analysis/</code> is untracked, so a third party cloning <code>malariagen/pf-peptidefilter</code> gets the app and the data but not these scripts or outputs. That is deliberate for now, but it means the reproducibility claim is "re-runnable by us against a verified app", not "re-runnable by a reviewer from the public repo". If the revision cites this analysis, the scripts need to land somewhere citable.</p>
     <p style="margin:0">Two smaller limits. The eight antigen identifiers were checked against the <code>gene_name</code> column of the app's own gene table, which is where the analysis resolves them, rather than against a live PlasmoDB query, which needs an API key. And the deployed Streamlit instance exposes no commit metadata, so the comparison is against live <code>prod</code> at <code>5861f79</code>, not whatever the public URL is currently serving.</p>
   </div>
 </section>
 
 <!-- 6 -->
-<section>
-  <div class="shead"><span class="snum">06</span><h2>Open questions</h2></div>
+<section id="s07">
+  <div class="shead"><span class="snum">07</span><h2>Open questions</h2></div>
   <div class="decision">
     <ol>
       <li><b>The human filter has two defensible sensitivity arms and I have run both</b> — varying alignment length, and varying identity with the length filter switched off. <b>Recommendation: keep both.</b> Five rows rather than two, but together they establish that identity is non-limiting under the default rule, which is worth a sentence in the Results. Drop the identity-only arm if the table needs to be tighter.</li>
       <li><b>The indel filter gets a relaxation-only pair</b>, with a sentence explaining that no stringent setting exists. <b>Recommendation: keep it that way.</b> Presenting a "stringent" setting that silently equals the baseline would be worse than stating the limit.</li>
-      <li><b>Conservation stringent — now <code>haplotype_gene_pc = 99</code>, <span class="chip ok">adopted</span></b> and regenerated throughout. <b>176 genes / 5,007 peptides</b>, a strict subset of the published catalogue (0 gained, 77 lost, Jaccard 0.696), replacing <code>strain_conservation = 0.995</code> (164 genes), which the app’s 0.01 slider cannot select. The reasoning and the full gene-rule axis are in §03.</li>
-      <li><b>Six wording corrections are needed, and five of them are already in print.</b> The methods paragraph needs three (the indel percentage, the "applied jointly" clause, the conservation clause — the last two change what the sentence claims the filter <em>does</em>, not just a number). The published Results need two more (the 1,274 and 2,107 sentences) plus the <code>&lt;5%</code> operator and the <i>P. berghei</i> phrasing, and the published Methods need "averaged across genes" replaced. All six are copy-ready in <code>analysis/MANUSCRIPT-CORRECTIONS.md</code> — sentence as published, replacement beneath, numbers behind each. That file is what to work from; §02 has the reasoning.</li>
-    </ol>
+      <li><b>Conservation stringent — now <code>haplotype_gene_pc = 99</code>, <span class="chip ok">adopted</span></b> and regenerated throughout. <b>176 genes / 5,007 peptides</b>, a strict subset of the published catalogue (0 gained, 77 lost, Jaccard 0.696), replacing <code>strain_conservation = 0.995</code> (164 genes), which the app’s 0.01 slider cannot select. The reasoning and the full gene-rule axis are in <a href="#s02">&sect;02</a>.</li>
+      <li><b>Six wording corrections are needed, and five are already in print.</b> All six are set out as a numbered checklist in <a href="#s04">&sect;04</a>, and copy-ready in <code>analysis/MANUSCRIPT-CORRECTIONS.md</code>.</li>
+
+      </ol>
   </div>
   <div class="prose">
-    <p>One further wording point in the published Methods, and it is the same class of error as §02. The Methods say human identity is <em>"assessed per peptide and averaged across genes"</em>, and Table 1 says <em>"filtering is performed at the peptide level and summarised per gene"</em>. Neither is a mean: the default rule is a 75th-percentile test. "Averaged" is wrong and "summarised" is too vague to reproduce from — both should name the percentile.</p>
     <p>And a documentation bug in the deployed repository, which is worth reporting to whoever owns it. The README <b>on <code>prod</code></b> — the branch the Streamlit app is deployed from — says at line 17: <em>"Please use <code>requirements.txt</code> and Python 3.12"</em>. But <code>requirements.txt</code> pins <code>pandas==1.5.1</code>, which publishes no cp312 wheel (PyPI has cp38, cp39, cp310 and cp311 only), so it cannot be installed on the Python the README asks for without building from source. Anyone following the README's own instructions will fail at <code>pip install</code>. Either the pin or the instruction needs to move; 3.11 works today. Verified against a fresh clone of <code>prod</code> at <code>5861f79</code>.</p>
-    <p class="note-under">The branch matters and is easy to get wrong: <code>main</code>’s <code>README.md</code> is a four-line stub that mentions no Python version at all, and the working tree used for this analysis matches <code>main</code>. An intermediate draft of this note checked the working tree, found nothing, and retracted the finding as unfounded — wrongly. It is recorded here rather than quietly restored.</p>
-  </div>
+    <p class="note-under">The branch matters: <code>main</code>&rsquo;s <code>README.md</code> is a four-line stub that mentions no Python version, and the working tree used for this analysis matches <code>main</code>. The claim is about <code>prod</code>.</p>
+</div>
 </section>
 
 <footer>
-  Scripts: <code>analysis/pepfilter_headless.py</code> (app driver and validation), <code>analysis/run_sensitivity.py</code>, <code>analysis/run_antigens.py</code>, <code>analysis/make_figure.py</code>, <code>analysis/run_interaction_checks.py</code>, <code>analysis/verify_conservation_grid.py</code>, <code>analysis/verify_provenance.sh</code>, and <code>analysis/make_report_pdf.py</code>. Outputs in <code>analysis/output/</code>. Scenario definitions were frozen before any output was inspected, and four were then <em>replaced</em> after their outputs were seen — three because they changed nothing and one because it emptied the catalogue. The final fifteen are therefore <b>not</b> pre-registered, which is what the email asked for (“check … if they make sense empirically”) and a departure from the plan’s Step 19. All five rejected or superseded options, with reasons, are in <code>rejected_scenarios.csv</code>. See departure 3 in §A.
+  Scripts: <code>analysis/pepfilter_headless.py</code> (app driver and validation), <code>analysis/run_sensitivity.py</code>, <code>analysis/run_antigens.py</code>, <code>analysis/make_figure.py</code>, <code>analysis/run_interaction_checks.py</code>, <code>analysis/verify_conservation_grid.py</code>, <code>analysis/verify_provenance.sh</code>, and <code>analysis/make_report_pdf.py</code>. Outputs in <code>analysis/output/</code>. Scenario definitions were frozen before any output was inspected, and four were then <em>replaced</em> after their outputs were seen — three because they changed nothing and one because it emptied the catalogue, which is a departure from Step 19 and what the plan asked for at Step 2. All five rejected or superseded options, with reasons, are in <code>rejected_scenarios.csv</code>. See departure 3 in <a href="#s01">&sect;01</a>.
 </footer>
 
 </div>
