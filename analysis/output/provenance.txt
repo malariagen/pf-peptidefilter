@@ -1,0 +1,86 @@
+Provenance check — 2026-09-14 10:11 UTC
+Working tree: /nfs/users/nfs_a/ab69/pf-peptidefilter
+Remote:       https://github.com/malariagen/pf-peptidefilter.git
+
+== live remote refs ==
+  3a9af729a894463c428194858b714ea8a1ff466a	refs/heads/main
+  5861f7945d7761cd82a9d10b48d65e0395ef6751	refs/heads/prod
+
+== live prod @ 5861f79 ==
+  peptidefilter/filter.py differs (20 substantive lines) — see diff below
+  peptidefilter/ui.py    differs (2 substantive lines) — see diff below
+  peptidefilter/util.py  differs (55 substantive lines) — see diff below
+  peptidefilter/enrichment.py differs (5 substantive lines) — see diff below
+  config/filters.json    identical
+  config/text.json       DIFFERS
+  requirements.txt       identical
+  gene-metrics-filtering.csv.gz md5 identical (fdee05f965f4)
+  peptide-metrics-filtering.csv.gz md5 identical (3380de0fc26f)
+  go-data-core.csv       md5 identical (0c212cb5fc8b)
+
+== live main @ 3a9af72 ==
+  pep/filter.py          identical
+  pep/ui.py              identical
+  pep/util.py            identical
+  pep/enrichment.py      identical
+  config/filters.json    identical
+  config/text.json       identical
+  requirements.txt       identical
+  gene-metrics-filtering.csv.gz md5 identical (fdee05f965f4)
+  peptide-metrics-filtering.csv.gz md5 identical (3380de0fc26f)
+  go-data-core.csv       md5 identical (0c212cb5fc8b)
+
+== filtering-logic diff: live prod vs what was run (blank lines/whitespace ignored) ==
+  1,3d0
+  < import copy
+  < import re
+  < 
+  4a2,3
+  > import numpy as np
+  > from typing import List, Dict, Union, Tuple
+  5a5,6
+  > import copy
+  > import re
+  7d7
+  < from typing import List, Dict, Union, Tuple
+  90c90
+  <                 and proportion of data remaining.
+  ---
+  >                 and fraction of data remaining.
+  133c133
+  <         'proportion': 1.0             # Proportion of data remaining (1.0 before any filters)
+  ---
+  >         'fraction': 1.0               # Fraction of data remaining (1.0 before any filters)
+  198,199c198,199
+  <         # Calculate the proportion of data remaining after applying the filter
+  <         proportion_remaining = len(filtered_df) / len(df) if len(df) > 0 else 0
+  ---
+  >         # Calculate the fraction of data remaining after applying the filter
+  >         fraction_remaining = len(filtered_df) / len(df) if len(df) > 0 else 0
+  206c206
+  <             'proportion': proportion_remaining  # Proportion of data remaining
+  ---
+  >             'fraction': fraction_remaining  # Fraction of data remaining
+  499c499
+  <     gene_summary_df = gene_summary_df[['order','filter', 'removed', 'remaining', 'proportion']]
+  ---
+  >     gene_summary_df = gene_summary_df[['order','filter', 'removed', 'remaining', 'fraction']]
+
+== UI_CONFIG threshold defaults: live prod vs what was run ==
+  no differences in any default, option list or slider range
+
+== uncommitted local edits to app code ==
+  none — working tree clean
+
+== interpretation ==
+  The working tree is byte-identical to live main for every file the analysis touches.
+  Against live prod, five files differ; none is in the filtering path:
+    peptidefilter/filter.py  cosmetic only — import order, and a summary column
+                             renamed proportion/fraction. No filtering behaviour differs.
+    peptidefilter/ui.py      import-only difference; every threshold default, option list
+                             and slider range is identical (checked separately above).
+    util.py, enrichment.py   not imported by filter.py (which imports only pandas, numpy,
+                             typing, streamlit, copy, re). enrichment.py is GO analysis.
+    config/text.json         UI copy only — app title, description prose, contact address.
+                             Filter definitions live in config/filters.json, which is identical.
+  All three data files are md5-identical on both branches.

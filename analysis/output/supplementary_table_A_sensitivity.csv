@@ -1,0 +1,16 @@
+scenario,filter_varied,exact_setting,genes,peptides,M253_genes_shared,M253_genes_pct_retained,M253_gene_jaccard,M253_peptides_shared,M253_peptides_pct_retained,M253_peptide_jaccard,APP_genes_shared,APP_genes_pct_retained,APP_gene_jaccard,APP_peptides_shared,APP_peptides_pct_retained,APP_peptide_jaccard,genes_gained_vs_M253,genes_lost_vs_M253,peptides_gained_vs_M253,peptides_lost_vs_M253,benchmark_antigens_retained
+APP,-,application defaults,1142,41332,253,100.0,0.222,10088,100.0,0.244,1142,100.0,1.0,41332,100.0,1.0,889,0,31244,0,none retained
+M253,-,published baseline,253,10088,253,100.0,1.0,10088,100.0,1.0,253,22.2,0.222,10088,24.4,0.244,0,0,0,0,none retained
+HUMAN-RELAXED,human,alignment length <=18 aa,376,14735,253,100.0,0.673,10088,100.0,0.685,253,22.2,0.2,10088,24.4,0.219,123,0,4647,0,none retained
+HUMAN-STRINGENT,human,alignment length <=12 aa,183,7261,183,72.3,0.723,7261,72.0,0.72,183,16.0,0.16,7261,17.6,0.176,0,70,0,2827,none retained
+HUMAN-IDONLY-RELAXED,human,"identity <=90%, length filter off",587,21554,253,100.0,0.431,10088,100.0,0.468,253,22.2,0.171,10088,24.4,0.191,334,0,11466,0,none retained
+HUMAN-IDONLY-BASELINE,human,"identity <=80%, length filter off",558,20706,253,100.0,0.453,10088,100.0,0.487,253,22.2,0.175,10088,24.4,0.194,305,0,10618,0,none retained
+HUMAN-IDONLY-STRINGENT,human,"identity <=70%, length filter off",506,19125,253,100.0,0.5,10088,100.0,0.527,253,22.2,0.181,10088,24.4,0.2,253,0,9037,0,none retained
+CONSERVATION-RELAXED,conservation,haplotype frequency >=0.95,417,23144,253,100.0,0.607,10088,100.0,0.436,253,22.2,0.194,10088,24.4,0.185,164,0,13056,0,none retained
+CONSERVATION-STRINGENT,conservation,99% of peptides at >=0.99 (gene rule),176,5007,176,69.6,0.696,5007,49.6,0.496,176,15.4,0.154,5007,12.1,0.121,0,77,0,5081,none retained
+INDEL-RELAXED-FREQ,indel,indel frequency <=0.10,260,10708,253,100.0,0.973,10088,100.0,0.942,253,22.2,0.22,10088,24.4,0.24,7,0,620,0,none retained
+INDEL-RELAXED-RULE,indel,95% of peptides must pass,291,13772,253,100.0,0.869,10088,100.0,0.733,253,22.2,0.214,10088,24.4,0.224,38,0,3684,0,none retained
+EXPRESSION-RELAXED,expression,>=1 CPM in >=2 replicates (D4),596,23321,253,100.0,0.424,10088,100.0,0.433,596,52.2,0.522,23321,56.4,0.564,343,0,13233,0,none retained
+EXPRESSION-STRINGENT,expression,>=5 CPM in all replicates (D4),251,10031,251,99.2,0.992,10031,99.4,0.994,251,22.0,0.22,10031,24.3,0.243,0,2,0,57,none retained
+ORTHOLOGY-RELAXED,orthology,no orthology requirement,290,11085,253,100.0,0.872,10088,100.0,0.91,290,25.4,0.254,11085,26.8,0.268,37,0,997,0,none retained
+ORTHOLOGY-STRINGENT,orthology,P. vivax AND P. berghei,251,10024,251,99.2,0.992,10024,99.4,0.994,251,22.0,0.22,10024,24.3,0.243,0,2,0,64,none retained

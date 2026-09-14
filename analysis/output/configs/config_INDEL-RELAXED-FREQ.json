@@ -1,0 +1,28 @@
+{
+  "scenario": "INDEL-RELAXED-FREQ",
+  "filter_varied": "indel",
+  "exact_setting": "indel frequency <=0.10",
+  "settings": {
+    "human_id_gene_rule": "Use minimum percentage of peptides",
+    "human_id_gene_pc": 75,
+    "human_id_joint_rule": "Joint (use both conditions in same filter)",
+    "identity_percent": 80,
+    "alignment_length": 15,
+    "haplotype_gene_rule": "Use minimum percentage of peptides",
+    "haplotype_gene_pc": 95,
+    "haplotype_type": "Any haplotype",
+    "strain_conservation": 0.99,
+    "indel_frequency": 0.1,
+    "indel_gene_pc": 100,
+    "indel_type": "Any",
+    "indel_frameshfits": "Any",
+    "expression_rule": "All replicates",
+    "cpm_cutoff": 1,
+    "expression_stage": [
+      "Liver Stage Day 4"
+    ],
+    "homology_species": [
+      "P. vivax"
+    ]
+  }
+}

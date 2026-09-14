@@ -1,0 +1,6 @@
+scenario_as_planned,genes,genes_vs_M253,reason_rejected
+HUMAN-RELAXED (identity 90%),253,0,no effect: under the joint rule the <=15 aa length criterion is binding at every identity value
+HUMAN-STRINGENT (identity 70%),253,0,no effect: same reason
+INDEL-STRINGENT (<=0.01),253,0,"no effect: the gene-level indel metric is a step function, identical for any cutoff 0.00-0.05"
+CONSERVATION-STRINGENT (=1.00),0,-253,degenerate: empties the catalogue (0 genes)
+CONSERVATION-STRINGENT (=0.995),164,-89,"off-grid: the app's haplotype-frequency slider has a 0.01 step, so 0.995 is not selectable; superseded by tightening the gene rule to 99%, which is on-grid"

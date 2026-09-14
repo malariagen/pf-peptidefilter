@@ -1,0 +1,12 @@
+# Rendering dependency for analysis/report.html -> analysis/output/R2-sensitivity-report.pdf.
+#
+# Deliberately separate from the repository's requirements.txt, which is the *app's* dependency
+# set and is byte-compared against live main by analysis/verify_provenance.sh. Adding anything
+# to that file would break the provenance check for no benefit.
+#
+# Install into its own virtualenv; it does not need to coexist with pandas 1.5.1:
+#     python3 -m venv .venv-report && .venv-report/bin/pip install -r analysis/requirements-report.txt
+#
+# Pinned because page breaks are version-dependent. Check the rendered PDF with pdfinfo after
+# each content edit; other WeasyPrint versions can move page breaks without changing the content.
+weasyprint==70.0

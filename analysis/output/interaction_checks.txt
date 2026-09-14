@@ -1,0 +1,38 @@
+Interaction cross-checks -- exploratory, not archived scenario rows
+========================================================================
+M253 baseline: 253 genes
+
+Individual relaxed arms
+  human (alignment_length<=18)             376 genes  (+123)
+  conservation (>=0.95)                    417 genes  (+164)
+  indel GENE RULE (indel_gene_pc=95)       291 genes  (+38)
+  indel FREQUENCY (<=0.10)                 260 genes  (+7)
+  expression (>=2 D4 replicates)           596 genes  (+343)
+  orthology (none required)                290 genes  (+37)
+
+All five relaxed together -- the two indel arms give different answers
+  with indel GENE RULE (indel_gene_pc=95)
+    actual                 2048 genes  (+1795)
+    individual gain sum     705
+    additive prediction     958
+    super-additive by      1090 genes
+    M253 is a subset      True
+  with indel FREQUENCY (<=0.10)
+    actual                 1565 genes  (+1312)
+    individual gain sum     674
+    additive prediction     927
+    super-additive by       638 genes
+    M253 is a subset      True
+
+  Expected for conjunctive filters: relaxing one admits only genes already passing the
+  other four, so simultaneous relaxation admits genes failing several at once. The
+  single-filter table is therefore a lower bound on the catalogue's sensitivity.
+
+Pairwise: do orthology and the indel gene rule interact?
+  orthology adds 37, indel gene rule adds 38, overlap 0
+  both together 328; additive prediction 328 -> additive
+
+Does the cost of tightening conservation depend on the human setting?
+  human_id_gene_pc= 75:  253 genes ->  176 with the 99% conservation gene rule (costs 77)
+  human_id_gene_pc= 50:  421 genes ->  302 with the 99% conservation gene rule (costs 119)
+  The two costs differ, so the filters are not independent.

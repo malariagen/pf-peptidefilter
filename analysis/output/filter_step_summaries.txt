@@ -1,0 +1,133 @@
+### APP  (application defaults)
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.99     2421       1274  0.258051
+     3                                 Indel Frequency <= 0.05      132       1142  0.231315
+
+### M253  (published baseline)
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.99     2421       1274  0.258051
+     3                                 Indel Frequency <= 0.05      132       1142  0.231315
+     4                              Liver-expressed D4 == True      852        290  0.058740
+     5                            Homology in P. vivax == True       37        253  0.051246
+
+### HUMAN-RELAXED  (alignment length <=18 aa)
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 18      554       4383  0.887786
+     2                             Strain Conservation >= 0.99     2713       1670  0.338262
+     3                                 Indel Frequency <= 0.05      170       1500  0.303828
+     4                              Liver-expressed D4 == True     1075        425  0.086085
+     5                            Homology in P. vivax == True       49        376  0.076160
+
+### HUMAN-STRINGENT  (alignment length <=12 aa)
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 12     2119       2818  0.570792
+     2                             Strain Conservation >= 0.99     1875        943  0.191007
+     3                                 Indel Frequency <= 0.05       95        848  0.171764
+     4                              Liver-expressed D4 == True      633        215  0.043549
+     5                            Homology in P. vivax == True       32        183  0.037067
+
+### HUMAN-IDONLY-RELAXED  (identity <=90%, length filter off)
+ order                       filter  removed  remaining  fraction
+     0              Initial Dataset        0       4937  1.000000
+     1       Human Identity % <= 90       17       4920  0.996557
+     2  Strain Conservation >= 0.99     2826       2094  0.424144
+     3      Indel Frequency <= 0.05      189       1905  0.385862
+     4   Liver-expressed D4 == True     1249        656  0.132874
+     5 Homology in P. vivax == True       69        587  0.118898
+
+### HUMAN-IDONLY-BASELINE  (identity <=80%, length filter off)
+ order                       filter  removed  remaining  fraction
+     0              Initial Dataset        0       4937  1.000000
+     1       Human Identity % <= 80       65       4872  0.986834
+     2  Strain Conservation >= 0.99     2823       2049  0.415029
+     3      Indel Frequency <= 0.05      187       1862  0.377152
+     4   Liver-expressed D4 == True     1240        622  0.125987
+     5 Homology in P. vivax == True       64        558  0.113024
+
+### HUMAN-IDONLY-STRINGENT  (identity <=70%, length filter off)
+ order                       filter  removed  remaining  fraction
+     0              Initial Dataset        0       4937  1.000000
+     1       Human Identity % <= 70      172       4765  0.965161
+     2  Strain Conservation >= 0.99     2810       1955  0.395989
+     3      Indel Frequency <= 0.05      186       1769  0.358315
+     4   Liver-expressed D4 == True     1206        563  0.114037
+     5 Homology in P. vivax == True       57        506  0.102491
+
+### CONSERVATION-RELAXED  (haplotype frequency >=0.95)
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.95      979       2716  0.550132
+     3                                 Indel Frequency <= 0.05      793       1923  0.389508
+     4                              Liver-expressed D4 == True     1451        472  0.095605
+     5                            Homology in P. vivax == True       55        417  0.084464
+
+### CONSERVATION-STRINGENT  (99% of peptides at >=0.99 (gene rule))
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.99     2822        873  0.176828
+     3                                 Indel Frequency <= 0.05       36        837  0.169536
+     4                              Liver-expressed D4 == True      633        204  0.041321
+     5                            Homology in P. vivax == True       28        176  0.035649
+
+### INDEL-RELAXED-FREQ  (indel frequency <=0.10)
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.99     2421       1274  0.258051
+     3                                  Indel Frequency <= 0.1      104       1170  0.236986
+     4                              Liver-expressed D4 == True      873        297  0.060158
+     5                            Homology in P. vivax == True       37        260  0.052664
+
+### INDEL-RELAXED-RULE  (95% of peptides must pass)
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.99     2421       1274  0.258051
+     3                                 Indel Frequency <= 0.05       28       1246  0.252380
+     4                              Liver-expressed D4 == True      918        328  0.066437
+     5                            Homology in P. vivax == True       37        291  0.058943
+
+### EXPRESSION-RELAXED  (>=1 CPM in >=2 replicates (D4))
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.99     2421       1274  0.258051
+     3                                 Indel Frequency <= 0.05      132       1142  0.231315
+     4                              Liver-expressed D4 == True      456        686  0.138951
+     5                            Homology in P. vivax == True       90        596  0.120721
+
+### EXPRESSION-STRINGENT  (>=5 CPM in all replicates (D4))
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.99     2421       1274  0.258051
+     3                                 Indel Frequency <= 0.05      132       1142  0.231315
+     4                              Liver-expressed D4 == True      855        287  0.058132
+     5                            Homology in P. vivax == True       36        251  0.050841
+
+### ORTHOLOGY-RELAXED  (no orthology requirement)
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.99     2421       1274  0.258051
+     3                                 Indel Frequency <= 0.05      132       1142  0.231315
+     4                              Liver-expressed D4 == True      852        290  0.058740
+
+### ORTHOLOGY-STRINGENT  (P. vivax AND P. berghei)
+ order                                                  filter  removed  remaining  fraction
+     0                                         Initial Dataset        0       4937  1.000000
+     1 Human Identity % <= 80 AND Human Alignment Length <= 15     1242       3695  0.748430
+     2                             Strain Conservation >= 0.99     2421       1274  0.258051
+     3                                 Indel Frequency <= 0.05      132       1142  0.231315
+     4                              Liver-expressed D4 == True      852        290  0.058740
+     5                            Homology in P. vivax == True       37        253  0.051246
+     6                          Homology in P. berghei == True        2        251  0.050841
+
