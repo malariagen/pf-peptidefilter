@@ -1,260 +1,213 @@
 # Audit prompt — Pf-PeptideFilter R2 revision package
 
-Paste everything below the line into a fresh window opened at
-`/nfs/users/nfs_a/ab69/pf-peptidefilter`. In Claude Code, start with `/clear`.
-
-Runnable in Codex or Claude. If run in both, do not let them coordinate.
+Paste everything below this line into Codex (or a fresh Claude session) with the repository
+checked out. **Read-only review**: report findings, do not edit the package.
 
 ---
 
-You are auditing a bioinformatics analysis prepared for a manuscript revision — Reviewer 2 comments
-**R2.1** (benchmark licensed and leading malaria vaccine antigens) and **R2.3** (add threshold
-sensitivity analysis) on the Pf-PeptideFilter preprint, doi 10.64898/2025.12.15.694343. The work is
-in `analysis/` and `analysis/output/`, untracked, on branch `add-manuscript-and-wiki`.
-
-The package has been checked before and errors were found and fixed each time. **Every claim below
-is therefore a claim, not a foundation.** Previous passes have shipped confident falsehoods —
-including a percentile quoted as "bottom 2%" for a gene at 2.028%, a load-bearing claim that "only
-conservation discriminates" when in fact three filters do, a percentile column briefly shipped
-inverted, a results table silently destroyed by a careless string replacement, and a true finding
-retracted after someone checked the wrong git branch. **Reproduce before you believe. Assert before
-you edit.** If you find yourself agreeing with everything here, you have not re-derived enough.
-
-Three parts, all equally weighted:
-
-1. **Technical** — does the code do what it says; do the numbers reproduce; is the write-up
-   internally consistent?
-2. **Scientific** — fair comparisons, warranted inferences, disclosed limitations, honest framing?
-3. **Against the brief** — does it answer what Jacob and the reviewer actually asked for?
-
-## Environment
-
-Python 3.12 **cannot** install `pandas==1.5.1` (no cp312 wheel); 3.10 and 3.11 can. Verified:
-**Python 3.10.12, pandas 1.5.1, numpy 1.26.4**.
-
-```bash
-/usr/bin/python3 -m venv <scratch>/pf151          # /usr/bin/python3 is 3.10.12
-<scratch>/pf151/bin/pip install "pandas==1.5.1" "numpy<2" matplotlib
-/usr/bin/python3 -m venv <scratch>/wp
-<scratch>/wp/bin/pip install -r analysis/requirements-report.txt   # weasyprint==70.0
-```
-
-WeasyPrint needs its own venv. Pagination is version-dependent, so establish the current page
-count yourself with `pdfinfo` rather than trusting any figure quoted in a document — and never
-cite a page number without naming the WeasyPrint version.
-
-## Rules
-
-- Every reported number must come from the app's own `filter_datasets()` in `pep/filter.py`, driven
-  through `analysis/pepfilter_headless.py`. **Never reimplement filtering logic in standalone pandas
-  as the source of a reported number** — an explicit early instruction from the user that still
-  stands. Re-deriving directly from `data/*.csv.gz` is not merely allowed but *wanted*, as an
-  independent cross-check.
-- **Do not modify `pep/`, `config/`, `data/` or `requirements.txt`.** The provenance claim depends on
-  those being byte-identical to live `main`, and `analysis/verify_provenance.sh` checks it —
-  `requirements.txt` included. Analysis-only dependencies belong in
-  `analysis/requirements-report.txt`.
-- **Do not commit or push.**
-- **`analysis/private/` must never be committed, pushed or copied off this machine.** It holds
-  Jacob's email and planning notes, protected by a self-ignoring `.gitignore` (`*`) and by
-  `.git/info/exclude`. Quote from it in your findings — that is what it is for — but never reproduce
-  the email into a tracked file. If you move it, re-verify with `git check-ignore -v` and
-  `git add --dry-run analysis/ | grep private`.
-- When editing `report.html`, anchor every replacement on a string you have verified is present and
-  assert the match count. A span replacement between two anchors will silently swallow everything
-  between them — that is how a results table was destroyed. Note also that `§` in a Python literal
-  has caused anchors to fail; prefer ASCII-only anchors.
-- **The report and the email are read by the user's supervisor.** They should read as finished work.
-  Do not add references to auditing, review rounds, revision history, or things having been "fixed"
-  or "restored" — describe what the analysis found, not how the document evolved.
-- Republishing the artifact is Claude-only (`Artifact` tool, pass
-  `url: https://claude.ai/code/artifact/7ead69c8-37c7-46b6-9963-d54abff1233f`). **If you are Codex,
-  skip it and say so.** Never create a second artifact.
+You are auditing a finished analysis package that answers two reviewer comments on a preprint.
+Treat every claim in it as a hypothesis to be tested, not as context to be accepted. Your job is
+to find things that are *wrong*, not to summarise.
 
 ## What exists
 
-**Inputs, do not modify:** `pep/filter.py` (the engine; `filter_datasets()` is the single source of
-every number), `pep/ui.py` (`UI_CONFIG` — every default, option list and slider range, i.e. what a
-user can actually select), `config/filters.json` (18 filter definitions), and the two data files:
-4,937 genes × 434 columns, 379,325 peptides × 45 columns. `manuscript/Manuscript.pdf` is the
-preprint (`pdftotext -layout`). `analysis/private/jacob-email.md` is the authoritative statement of
-what was asked for; `analysis/private/analysis-plan.md` is the attached plan, Steps 1–20, whose
-M253 paragraph is the corrected version with the original preserved in a `<details>` block beneath.
+Repository: `malariagen/pf-peptidefilter`, branch `r2-sensitivity-analysis`.
+The package is entirely under `analysis/`. The app itself — `pep/`, `config/`, `data/`,
+`requirements.txt` — is unmodified and must stay that way.
 
-**Scripts:** `pepfilter_headless.py` (substitutes a dict for `st.session_state`; provides
-`app_defaults()`, `m253()`, `isolate()`, and `validate()`, which asserts published numbers before
-any analysis runs), `run_sensitivity.py` (15 scenarios → Table A, retention matrix,
-`rejected_scenarios.csv`, 15 frozen configs, 45 per-run catalogues), `run_antigens.py` (8-antigen
-benchmark → Table B), `make_figure.py`, `run_interaction_checks.py` (exploratory),
-`verify_conservation_grid.py`, `verify_provenance.sh`, `make_report_pdf.py`.
+| path | what it is |
+|---|---|
+| `analysis/report.html` → `analysis/output/R2-sensitivity-report.pdf` | the deliverable, 8 sections |
+| `analysis/pepfilter_headless.py` | drives the app's own `filter_datasets()` from a dict instead of Streamlit widgets; `validate()` asserts six published figures |
+| `analysis/run_sensitivity.py` | the 15 scenarios → Table A, retention matrix, rejected scenarios |
+| `analysis/run_antigens.py` | per-antigen behaviour → Table B, percentile ranks, threshold sweeps |
+| `analysis/run_interaction_checks.py` | multi-filter cross-checks (not archived scenario rows) |
+| `analysis/make_figure.py`, `analysis/make_report_pdf.py` | figure, PDF render |
+| `analysis/verify_provenance.sh`, `analysis/verify_conservation_grid.py` | provenance and grid checks |
+| `analysis/MANUSCRIPT-CORRECTIONS.md` | six copy-ready wording corrections |
+| `analysis/DRAFT-EMAIL-TO-JACOB.md` | covering note |
+| `analysis/output/` | both supplementary tables, 15 frozen configs, 45 per-run catalogues, provenance record |
 
-**Outputs:** Table A (22 cols × 15 rows), Table B (32 cols × 8 rows), the 8 × 15 retention matrix,
-`rejected_scenarios.csv`, `interaction_checks.txt`, `COLUMN-DEFINITIONS.md`, `provenance.txt`, the
-figure, and `report.html` → the PDF. Supervisor-facing: `DRAFT-EMAIL-TO-JACOB.md` and
-`MANUSCRIPT-CORRECTIONS.md`.
+`analysis/private/` is excluded from git and is not part of the audit.
+
+## Environment — do not skip this
+
+The host Python may ship a pandas that the analysis was not written against. The pinned stack is
+**Python 3.10, pandas 1.5.1, numpy 1.26.4**. Build an isolated environment from the repository's
+own `requirements.txt` and run everything there. A previous auditor found the host had pandas 2.3.3
+and correctly refused to trust results from it.
+
+WeasyPrint needs a *separate* venv (`analysis/requirements-report.txt`, pinned to 70.0) because it
+conflicts with the pinned pandas. Pagination moves between versions and the report is still being
+edited, so **establish the current page count yourself with `pdfinfo`** rather than trusting any
+figure quoted here.
+
+## Rules
+
+- Every number you report must come from the app's own `filter_datasets()` in `pep/filter.py`,
+  driven through `analysis/pepfilter_headless.py`. **Never reimplement the filtering logic in
+  standalone pandas** and then claim the package is wrong — that is how two earlier false alarms
+  were produced. Recomputing a *gene metric* directly from `data/*.csv.gz` is fine and encouraged;
+  recomputing the *filter chain* is not.
+- Do not modify anything under `pep/`, `config/`, `data/` or `requirements.txt`.
+- Do not commit, push, or create an artifact.
+- Where you disagree with a number, give the figure you got, the exact configuration that produced
+  it, and the command to reproduce it.
 
 ## The mechanism everything depends on
 
-Every "% of gene peptides that need to pass" control selects a **precomputed linear-interpolation
-percentile column**. It does not count peptides (`pep/filter.py:287-315`):
+Get this right before auditing anything else, because most of the package's findings rest on it.
 
-| filter | column | test | at M253 |
+Each filter is measured per peptide, then summarised to the gene by selecting a **precomputed
+linear-interpolation percentile column** — never by counting how many peptides passed:
+
+| filter | column tested | test | at the published config |
 |---|---|---|---|
-| human identity | `blt_pident_p{human_id_gene_pc}` | `<= 80` | `_p75` |
-| human length | `blt_length_p{human_id_gene_pc}` | `<= 15` | `_p75` |
-| conservation | `hap_top_hap_freq_p{100 - haplotype_gene_pc}` | `>= 0.99` | `_p05` |
-| indels | `max_indel_freq_type_any_fs_any_p{indel_gene_pc}` | `<= 0.05` | `_p100` |
+| human identity | `blt_pident_p{human_id_gene_pc}` | `<= identity_percent` | `_p75 <= 80` |
+| human length | `blt_length_p{human_id_gene_pc}` | `<= alignment_length` | `_p75 <= 15` |
+| conservation | `hap_top_hap_freq_p{100 - haplotype_gene_pc}` | `>= strain_conservation` | `_p05 >= 0.99` |
+| indels | `max_indel_freq_type_any_fs_any_p{indel_gene_pc}` | `<= indel_frequency` | `_p100 <= 0.05` |
 
-Claimed consequences, all to be verified: the two human filters are separate marginal tests ANDed
-together (the app never asks whether the *same* 75% of peptides passes both); a percentile is not a
-count; only the indel rule (`_p100`, the maximum) has prose that is literally true; and the
-conservation `100 − pc` inversion is correct and correctly used.
+Note the conservation inversion (`100 - pc`), which the other filters do not have. Note also that
+the two human tests are **separate marginal tests ANDed together** — the app never asks whether the
+*same* 75% of peptides passes both.
 
----
+## Traps that have already caught people
 
-# Part 1 — technical
+Concrete, not hypothetical. Each of these produced a wrong result in this work at some point.
 
-**T1. Re-derive independently.** Reimplement the five filters as direct masks over
-`data/*.csv.gz`, never calling `filter_datasets()`, and compare **as sets** — not counts — against
-the archived `run_outputs/`, for all 15 scenarios at gene *and* peptide level. Re-derive every
-number `validate()` asserts the same way. Report any disagreement: the app-driven number is
-authoritative, but a disagreement is a bug.
+1. **`isolate()` leaks NaN.** "Neutralised" means held at a permissive threshold, not switched off.
+   `NaN <= x` and `NaN >= x` are both False in pandas, so genes with a NaN in an *unrelated* metric
+   still drop. An isolated indel run gives **3,451**; the indel metric alone gives **3,457**. Both
+   are correct for different questions. Check which one a given claim is about before calling it an
+   error.
+2. **`"None"` is in pandas' default `na_values`.** The antigen column deliberately reads
+   `none retained`, not `None`, so the headline R2.1 result does not round-trip to NaN.
+3. **Percentile direction is easy to invert.** A "genome percentile" that reads 99.7 for CSP looks
+   excellent but means "worse than 99.7% of the genome". The shipped columns count strictly-worse
+   genes; CSP should read **0.3**.
+4. **Ties cap the percentile scales.** Conservation reaches 99.6%, but human identity tops out at
+   56.7% (2,138 genes tie at the best value) and indel frequency at 30.0% (3,457 tie). Any claim
+   about an antigen being "mid-range" must account for what the scale can reach.
+5. **Percentile denominators differ.** 4,930 genes carry a conservation value, 4,933 an identity
+   value, all 4,937 an indel value. A footnote saying "against all 4,937" was wrong for two of the
+   three.
+6. **WeasyPrint does not fragment flex/grid containers across page breaks** — it silently drops the
+   overflow. Print CSS forces block layout for paged media. Verify no section is missing from the
+   PDF rather than assuming.
+7. **`pdftotext` prefixes a form feed to headings that start a page**, so `grep '^Heading'` misses
+   them. Two "missing section" alarms were artefacts of this.
+8. **`.eyebrow` spans are letter-spaced by CSS**, so extracted text reads `A D D I T I O N A L` and
+   defeats naive greps.
+9. **Slider grids constrain what is selectable.** `strain_conservation` is min 0.0 / max 1.0 /
+   step 0.01, so 0.995 and 0.999 cannot be chosen in the app. Gene-rule sliders offer 39 discrete
+   values. A scenario that cannot be reproduced by clicking the published app is a defect.
+10. **Anchored string replacement in `report.html` is dangerous.** Em dashes appear both as
+    `&mdash;` and as literal `—`, and quotes both as entities and as literals. Assert before
+    writing.
 
-**T2. Replay the archive.** Feed all 15 frozen configs in `output/configs/` back through
-`pepfilter_headless.run()`, confirm each matches its Table A row, and recompute all 22 columns
-cell-by-cell.
+## Part 1 — technical
 
-**T3. The percentile mechanism.** Verify the suffix mapping, the direction of each test, and the
-`100 − pc` inversion. Confirm an off-by-one would be detectable. Quantify how far the percentile
-form diverges from its own label, in both directions, per filter.
+**T1.** Build the pinned environment. Run `analysis/pepfilter_headless.py`'s `validate()`. Confirm
+all six published figures reproduce: 2,107 / 84,556 and 1,517 / 42,208 (conservation only at two
+gene rules), 1,274 (conservation + human identity), 253 / 10,088 (the published configuration).
 
-**T4. Table B.** Confirm every `*_gene_rule_pct_tolerated` is the correct **floor** on the app's
-39-value grid rather than the nearest; that pass/fail is monotone in the setting; that
-`*_true_pct_peptides_passing` matches a direct count from the peptide table; that
-`*_genome_percentile` runs in the stated direction and uses the right denominator; and that
-`M253_exclusion_reason` lists **every** failing filter, not just the first.
+**T2.** Regenerate everything from the scripts. Compare the regenerated `output/` against what is
+committed, cell by cell, not by eyeballing. Report any drift.
 
-**T5. Figure.** Every plotted value must match Table B; each reference line must be the correct
-requirement; filled/hollow must agree with PASS/FAIL; sort order consistent across panels; axis
-labels must not claim a quantity the values are not.
+**T3.** Replay all 15 frozen configs in `output/configs/` and confirm each reproduces its own row in
+Supplementary Table A, including both Jaccard columns and the direction-of-change counts.
 
-**T6. Render integrity.** WeasyPrint silently drops flex/grid content at page breaks — it has twice
-removed whole sections from this report. After rendering, confirm all **eight** sections (the
-plain-language walkthrough, §A, §01–§06) and all **17** settings in §02's completeness table are
-present. `pdftotext` prefixes a form feed to any heading that starts a page, so match on heading
-**text**, not line start. Before any republish, diff structural counts (`<section`, `<table`, `<tr`,
-`.callout`, `.tablebox`, `<figure>`, `<li>`, `<blockquote>`) against the live version.
+**T4.** Independently verify the percentile mechanism from the raw tables: for a sample of genes,
+confirm the app's verdict follows the percentile column and not a peptide count, and quantify the
+disagreement genome-wide in both directions. The package claims **99 genes admitted** on fewer than
+95% of their peptides and **2 rejected** despite meeting the count, and **zero** disagreement for
+the indel rule. A previous auditor reported 4 rather than 2 for the second figure; settle it and say
+which boundary convention you used.
 
-**T7. Consistency sweep.** Every number in `report.html`, `DRAFT-EMAIL-TO-JACOB.md` and
-`MANUSCRIPT-CORRECTIONS.md` must match the current outputs. This is where stale text has repeatedly
-survived a regeneration. Check especially: scenario and configuration counts, the
-conservation-stringent arm, the two peptide definitions, percentile values and their denominators,
-and any figure quoted in more than one document.
+**T5.** Verify the four departures from the plan are forced rather than chosen. Specifically:
+identity should return 253 genes at every setting from ≤60% to ≤100%; the indel frequency threshold
+should return 253 at 0.05, 0.04, 0.03, 0.02, 0.01 and 0.00; the indel type restrictions should
+*loosen* the filter (280 / 260 / 294 / 297 against 253); conservation at 1.00 should empty the
+catalogue. Departure 3 is a judgement call, not a data fact — say whether you think it is defensible.
 
-**T8. Provenance.** Re-run `verify_provenance.sh`; confirm `main` and `prod` have not moved and
-re-verify rather than assume if either has. Confirm `git status --porcelain` shows no modified
-tracked file and that `analysis/private/` is not stageable.
+**T6.** Verify the six manuscript corrections in §04. In particular the three readings of the
+published 1,274 sentence: **1,274** as the app ran it, **158** run as written with 95% attached to
+both filters, and **92** for the joint-subset reading. The 92 counts genes where the same ≥95% of
+peptides clears conservation ≥0.99 *and* identity ≤80% *and* length ≤15 aa; check that the report
+specifies all three, since the two-criterion reading gives 1,133.
 
-**T9. Verify the scripts are runnable and honest.** Every script in `analysis/` should run to
-completion in the pinned environment. A crashing or vestigial script in a reproducibility bundle is
-a defect. Check also that any claim in the email or report about a check having been performed
-corresponds to something actually shipped in `analysis/` — a reader must be able to re-run it.
+**T7.** Run `verify_provenance.sh`. Confirm the app files used by the analysis are byte-identical to
+live `main`, and that the differences against `prod` are all outside the filtering path.
 
-# Part 2 — scientific
+**T8.** Confirm no tracked file outside `analysis/` is modified, and that `git add --dry-run .`
+stages nothing from `analysis/private/` and nothing named `Comments for the authors.docx`.
 
-For each, decide: **real / not real / needs a caveat / needs new analysis**, and say whether it
-changes a conclusion.
+**T9.** Run every script in `analysis/`. Any that fails, or any claim of the form "X was checked"
+with no shipped file a reader could re-run, is a finding. One such claim was previously unsupported.
 
-**S1. Is the antigen benchmark a fair test?** The eight span two life stages (CSP, TRAP, CelTOS,
-LSA3 pre-erythrocytic; AMA1, MSP1, RH5, EBA175 blood-stage) while the baseline requires liver-stage
-day-4 expression. Which failures are stage-explained and which are not? Does the headline survive
-substituting the sporozoite-stage filter, or removing expression and orthology altogether? Which
-filters discriminate on stage-independent grounds, and how many antigens does each account for?
+**T10.** Render the PDF in the WeasyPrint venv. Confirm all eight sections survive into it, no table
+is truncated, and every one of the 52 internal `§NN` links resolves to a real section id.
 
-**S2. Is it circular?** The tool selects conserved genes; these antigens are known for variation.
-Does the percentile-rank framing genuinely escape that, or only restate it? Is the whole gene set
-the right comparator, or should it be matched for surface exposure or immune selection? Check what
-each percentile scale can actually reach — ties at the best value cap the maximum attainable score,
-and that changes how "extreme" and "mid-range" should be read.
+## Part 2 — scientific
 
-**S3. Do the inferences outrun the computation?** Go through the report's scientific review, §03 and
-§04 sentence by sentence and ask of each: does the computation establish this, or is it
-interpretation? The report claims to mark that difference; check it does, consistently.
+**S1.** Is the antigen benchmark fair? The panel mixes pre-erythrocytic and blood-stage antigens
+against a liver-stage expression filter. The package argues the conclusion survives because the
+sporozoite-stage filter gives 695 genes and still retains none, and removing expression and
+orthology entirely gives 1,142 and still retains none. Test both.
 
-**S4. Threshold and sampling robustness.** Is 0.99 defensible given what can and cannot be
-determined about sampling error from the shipped data? Is the fragility correctly quantified?
+**S2.** Is the benchmark circular? The tool selects for conservation and these antigens are famous
+for variation. The package argues percentile ranks "blunt" the objection without dissolving it.
+Assess whether that framing is honest, and whether the percentile scales are comparable across the
+three criteria given the tie ceilings in trap 4.
 
-**S5. Expression filter validity.** Is CPM here parasite-relative within host-dominated libraries?
-What does that do to cross-stage comparison, to the ≥1 CPM rule, and to the stringent arm? Is the
-Day-4 justification stated in a way the data supports — and is the same criticism true *within* day
-4 across its three replicates?
+**S3.** One-filter-at-a-time understates total sensitivity. The package reports 2,048 genes for all
+five relaxed against an additive prediction of 958. Verify, and say whether the limitation is stated
+plainly enough.
 
-**S6. Geographic scope.** Conservation is African-only. Disclosed? Correctly scoped? Free of
-uncited biological claims?
+**S4.** Conservation comes from 8,492 African isolates of Pf7's 16,203. Is the scope limitation
+stated where a reader would need it?
 
-**S7. Design limitations.** One-at-a-time cannot detect compounding. Jacob explicitly scoped
-combinatorics out, so the question is whether the limitation is *stated*, not whether it is fixed.
-Is the interaction evidence correct and framed as exploratory?
+**S5.** The 0.99 threshold cannot be checked against sampling error — no coverage column ships.
+The package reports 18 of the 253 within 0.001 of the cut. Verify, and assess whether the caveat is
+proportionate.
 
-**S8. Statistics and framing.** No inferential statistics are used — confirm none are needed and
-none are implied. Is Jaccard versus containment interpreted correctly for nested sets of very
-different sizes? Is every term a reader needs defined on first use? Does anything imply a verdict on
-whether these antigens are good vaccine targets, which Jacob flagged as **Important**?
+**S6.** The day-4 expression default. The package argues day 2 is unusable because of library depth,
+not parasite biology, citing one replicate totalling 15,682 CPM. Check the reasoning.
 
-**S9. Anything else.** Every pass so far has found something new. Expect to.
+**S7.** Are there claims in the report that the computation does not support — interpretation
+presented as output? Check the R2.1 "working as intended" passage especially.
 
-# Part 3 — against the brief
+**S8.** Anything scientifically wrong that nobody has flagged. This is the most valuable part of the
+audit.
 
-`analysis/private/jacob-email.md` and `analysis/private/analysis-plan.md` are authoritative. Read
-both line by line. Quote them; do not paraphrase. **Verify every quotation the report attributes to
-them, and every quotation it attributes to the preprint** — one preprint quote was previously
-silently normalised, so check them character by character against `pdftotext` output.
+## Part 3 — against the brief
 
-Points that carry consequences:
+The plan and the originating email are private and not in the repository. §01 of the report quotes
+them verbatim, item by item, in a numbered 23-row table. Audit the *internal consistency* of that
+table: does each "Delivered, and where" actually exist at the path or section named, and does each
+"What it showed" match what that section says? Flag any row whose evidence you cannot locate.
 
-- The email rules out combinatorial search: *"we are not going to iterate through hundreds of
-  combinations."* One-at-a-time is a decision. Do not propose a factorial sweep as a remedy.
-- The email pre-authorises arbitrary thresholds: *"a bit arbitrary but just need something
-  sensible."* So the specific values are not a defect — but **does every scenario have a stated
-  rationale, and does it hold for the value actually used** rather than the one it replaced?
-- Plan Step 3 forbids varying alignment length and the Joint rule; the analysis does both. Steps 4
-  and 5 contain similar prohibitions on changing the gene-peptide proportion; check whether those
-  are breached too, and whether each breach is disclosed or only some.
-- Step 14 asks for the *percentage of peptides passing*. Confirm that quantity is present, correct,
-  and clearly distinguished from the slider setting.
-- Steps 2 and 19 require pre-registration; the email asks for empirical vetting. These conflict.
-  Does the report state which it did, and avoid implying pre-registration?
-- Steps 8, 9 and 15 specify **12 runs**; there are 15. Is the difference explained?
-- Step 20 asks for a Results summary with five named components. One is drafted in the report.
-  **This is the only text destined for the manuscript — audit it hardest.** Check all five
-  components, every number, that it is marked as proposed rather than presented as manuscript text,
-  and above all that it does not restate any error the rest of the document exists to correct.
-- Also confirm: the email's four named outputs; Step 6's "prespecified sensitivity-analysis value"
-  caveat; Step 12's identifier table; Step 17's heatmap and whatever replaced it; Step 18's
-  interpretation rules; Step 19's reproducibility list.
-- R2.1 asked about *"licensed and leading"* antigens. Only one of the eight underlies a licensed
-  vaccine. Does the report imply otherwise?
+Four rows are marked "answered differently". Check that each has its reason stated and its
+supporting run shipped.
 
-# Part 4 — the plain-language walkthrough
+## Part 4 — the plain-language walkthrough
 
-The report opens with a plain-language section for a reader who did not build this and has not read
-`filter.py`. Read it cold and judge it as that reader. It must explain what was asked, what the app
-does (including the percentile gene-rule mechanism, with a concrete worked example), what the
-baseline is, how the sensitivity analysis and antigen benchmark work, what was found, and what the
-analysis cannot tell you. Verify every number in it, define-on-first-use for every term, and check
-its counts agree with the rest of the document.
+Separately from the findings, write a walkthrough a non-specialist could follow: what the analysis
+did, what it found, what changes to the paper it implies, and what remains uncertain. No jargon
+without a gloss. This is used to check the report is comprehensible, so say plainly which parts of
+it you found hard to follow and why.
 
-# Report back
+## Report back
 
-1. **A table of every claim checked** — verified / refuted / could not verify, with the number *you*
-   computed, never the number quoted at you here.
-2. **Every discrepancy**, with the code or data that demonstrates it.
-3. **Anything not on this list.**
-4. **Anything on this list you judge to be wrong.**
-5. **Your plain judgement**: is this sound enough to go into a manuscript revision, and what would
-   you change first?
+1. **Findings**, ranked by severity. For each: the claim, what you measured, the exact
+   configuration, the command to reproduce, and whether it changes a result or only wording.
+2. **The walkthrough** from Part 4.
+3. **What you could not check**, and why.
 
-Fix what is clearly broken and within scope — stale numbers, wrong wording, a crashing script. For
-anything that changes a **result** or a **scientific claim**, report it and propose the fix rather
-than applying it unilaterally. Then re-render the PDF and verify per T6; Claude, republish to the
-same artifact URL; Codex, skip that and say so.
+Do not fix anything. If you believe a change is needed, say what and where.
+
+One note on tone: the report and the covering note go to the colleague who wrote both the app and
+the analysis plan. They must not acquire process language — no "audit round", no "this revision",
+no explanations of how the app works, and no third-person references to him. If you suggest wording,
+match that.
